@@ -1,0 +1,9 @@
+.dgInput label {
+  display: flex;
+  flex-direction: column;
+  font-size: 2rem;
+}
+
+.dgInput input {
+  font-size: 2rem;
+}

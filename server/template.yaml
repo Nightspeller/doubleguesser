@@ -1,0 +1,192 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Infrastructure for the game Double Guesser by Sergei Sidorov 
+  
+Globals:
+  Function:
+    Timeout: 30
+    Tags:
+      project: doubleguesser
+
+Parameters:
+  ConnectionTableName:
+    Type: String
+    Default: 'doubleguesser_connections'  
+  GameTableName:
+    Type: String
+    Default: 'doubleguesser_game_states'
+
+Resources:
+  ConnectionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      Tags:
+        - Key: project
+          Value: doubleguesser
+      AttributeDefinitions:
+        - AttributeName: "connectionId"
+          AttributeType: "S"
+        - AttributeName: "roomCode"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "connectionId"
+          KeyType: "HASH"
+        - AttributeName: "roomCode"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName: !Ref ConnectionTableName
+  GamesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      Tags:
+        - Key: project
+          Value: doubleguesser
+      AttributeDefinitions:
+        - AttributeName: "roomCode"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "roomCode"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName: !Ref GameTableName
+  CreateRoomFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: CreateRoomLambda
+      CodeUri: lambdas/create-room/
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+          GAMES_TABLE_NAME: !Ref GameTableName
+      Policies:
+        - DynamoDBCrudPolicy: 
+            TableName: !Ref ConnectionTableName 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GameTableName
+      Events:
+        HelloWorld:
+          Type: Api 
+          Properties:
+            Path: /create-room
+            Method: post
+    Metadata: 
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: false
+        External: 
+        - aws-sdk
+        EntryPoints: 
+        - app.ts
+  JoinRoomFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: JoinRoomLambda
+      CodeUri: lambdas/join-room/
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+          GAMES_TABLE_NAME: !Ref GameTableName
+      Policies:
+        - DynamoDBCrudPolicy: 
+            TableName: !Ref ConnectionTableName 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GameTableName
+      Events:
+        HelloWorld:
+          Type: Api 
+          Properties:
+            Path: /join-room
+            Method: post
+    Metadata: 
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: false
+        External: 
+        - aws-sdk
+        EntryPoints: 
+        - app.ts
+  LeaveRoomFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: LeaveRoomLambda
+      CodeUri: lambdas/leave-room/
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+          GAMES_TABLE_NAME: !Ref GameTableName
+      Policies:
+        - DynamoDBCrudPolicy: 
+            TableName: !Ref ConnectionTableName 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GameTableName
+      Events:
+        HelloWorld:
+          Type: Api 
+          Properties:
+            Path: /leave-room
+            Method: post
+    Metadata: 
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: false
+        External: 
+        - aws-sdk
+        EntryPoints: 
+        - app.ts
+  UpdateGameFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: UpdateGameLambda
+      CodeUri: lambdas/update-game/
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+          GAMES_TABLE_NAME: !Ref GameTableName
+      Policies:
+        - DynamoDBCrudPolicy: 
+            TableName: !Ref ConnectionTableName 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GameTableName
+      Events:
+        HelloWorld:
+          Type: Api 
+          Properties:
+            Path: /update-game
+            Method: post
+    Metadata: 
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: false
+        External: 
+        - aws-sdk
+        EntryPoints: 
+        - app.ts

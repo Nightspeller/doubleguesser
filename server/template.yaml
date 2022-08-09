@@ -86,6 +86,7 @@ Resources:
         Sourcemap: false
         External: 
         - aws-sdk
+        - aws-lambda
         EntryPoints: 
         - app.ts
   JoinRoomFunction:
@@ -120,6 +121,7 @@ Resources:
         Sourcemap: false
         External: 
         - aws-sdk
+        - aws-lambda
         EntryPoints: 
         - app.ts
   LeaveRoomFunction:
@@ -154,6 +156,7 @@ Resources:
         Sourcemap: false
         External: 
         - aws-sdk
+        - aws-lambda
         EntryPoints: 
         - app.ts
   UpdateGameFunction:
@@ -188,6 +191,7 @@ Resources:
         Sourcemap: false
         External: 
         - aws-sdk
+        - aws-lambda
         EntryPoints: 
         - app.ts
   RejoinRoomFunction:
@@ -222,6 +226,7 @@ Resources:
         Sourcemap: false
         External: 
         - aws-sdk
+        - aws-lambda
         EntryPoints: 
         - app.ts
 

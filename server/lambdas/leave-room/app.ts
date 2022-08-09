@@ -16,12 +16,11 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             throw new Error('Could not close connection. No connection ID.');
         }
 
-        const userToken = JSON.parse(event.body || '').userToken;
+        const { userToken, roomCode } = JSON.parse(event.body || '').userToken;
         if (!userToken) {
             throw new Error('Could not remove user. No user token.');
         }
 
-        const roomCode = JSON.parse(event.body || '').roomCode;
         if (!roomCode) {
             throw new Error('Could not leave room. No room code provided.');
         }
@@ -86,7 +85,6 @@ async function updateGame(roomCode: string, userToken: string) {
     try {
         const updateParams = getGameUpdateCommand(roomCode, userToken);
         const result = await ddbClient.update(updateParams).promise();
-        console.log(result); //TODO how to get what I need
         const players = result?.Attributes?.players;
         const roomEmpty = Object.keys(players).every((player) => {
             return !players[player].connected;

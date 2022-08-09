@@ -16,12 +16,11 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             throw new Error('Could not store connection. No connection ID.');
         }
 
-        const userToken = JSON.parse(event.body || '').userToken;
+        const { userToken, roomCode } = JSON.parse(event.body || '');
         if (!userToken) {
             throw new Error('Could not store user. No user token.');
         }
 
-        const roomCode = JSON.parse(event.body || '').roomCode;
         if (!roomCode) {
             throw new Error('Could not join. No room code provided.');
         }

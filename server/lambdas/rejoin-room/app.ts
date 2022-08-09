@@ -26,7 +26,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             throw new Error('Could not rejoin room. No room code provided.');
         }
 
-        await updateConnectionEntry(roomCode, userToken, connectionId);
+        await updateConnectionEntry(connectionId, roomCode, userToken);
         await updateGameState(roomCode, userToken);
 
         response = {

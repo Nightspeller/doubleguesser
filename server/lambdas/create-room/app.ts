@@ -46,7 +46,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
     return response;
 };
 
-function getShortRoomCode() {
+function getShortRoomCode(): string {
     return randomUUID().slice(0, 4);
 }
 

@@ -26,3 +26,11 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+.DS_Store
+server/.DS_Store
+server/lambdas/create-room/.DS_Store
+server/lambdas/join-room/.DS_Store
+server/lambdas/leave-room/.DS_Store
+server/lambdas/update-game/.DS_Store
+server/lambdas/create-room/.DS_Store

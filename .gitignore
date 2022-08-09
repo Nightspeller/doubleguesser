@@ -1,0 +1,28 @@
+/server/lambdas/create-room/node_modules
+/server/lambdas/join-room/node_modules
+/server/lambdas/leave-room/node_modules
+/server/lambdas/rejoin-room/node_modules
+/server/lambdas/update-game/node_modules
+
+/server/.aws-sam
+
+/client/node_modules
+/client/.pnp
+/client.pnp.js
+
+# testing
+/client/coverage
+
+# production
+/client/build
+
+# misc
+/client/.DS_Store
+/client/.env.local
+/client/.env.development.local
+/client/.env.test.local
+/client/.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -23,12 +23,10 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
 
         const roomCode = JSON.parse(event.body || '').roomCode;
         if (!roomCode) {
-            //TODO this should not throw an error
-            //Retrieve roomCode using the connectionID via query
             throw new Error('Could not leave room. No room code provided.');
         }
 
-        await deleteUserConenction(connectionId, roomCode);
+        await deleteUserConenction(userToken, roomCode);
         await updateGame(roomCode, userToken);
         response = {
             statusCode: 200,
@@ -49,19 +47,19 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
     return response;
 };
 
-function getConnectionDeleteOperation(connectionId: string, roomCode: string): DynamoDB.DocumentClient.DeleteItemInput {
+function getConnectionDeleteOperation(userToken: string, roomCode: string): DynamoDB.DocumentClient.DeleteItemInput {
     return {
         TableName: process.env.CONNECTIONS_TABLE_NAME || '',
         Key: {
-            connectionId,
+            userToken,
             roomCode,
         },
     };
 }
 
-async function deleteUserConenction(connectionId: string, roomCode: string) {
+async function deleteUserConenction(userToken: string, roomCode: string) {
     try {
-        const deleteParams = getConnectionDeleteOperation(connectionId, roomCode);
+        const deleteParams = getConnectionDeleteOperation(userToken, roomCode);
         await ddbClient.delete(deleteParams).promise();
     } catch (err) {
         console.log(err);

@@ -94,7 +94,7 @@ async function authenticateUserUpdate(
     roomCode: string,
     gameState: any,
 ): Promise<boolean> {
-    const connectionEntry = await getConnectionEntry(connectionId, roomCode);
+    const connectionEntry = await getConnectionEntry(userToken, roomCode);
     const item = connectionEntry?.Item;
     if (item?.connectionId !== connectionId) {
         return false;
@@ -121,22 +121,19 @@ function isValidGameState(gameState: any): boolean {
     return true;
 }
 
-function getConnectionOpereration(connectionId: string, roomCode: string): DynamoDB.DocumentClient.GetItemInput {
+function getConnectionOpereration(userToken: string, roomCode: string): DynamoDB.DocumentClient.GetItemInput {
     return {
         TableName: process.env.CONNECTIONS_TABLE_NAME || '',
         Key: {
-            connectionId,
+            userToken,
             roomCode,
         },
     };
 }
 
-async function getConnectionEntry(
-    connectionId: string,
-    roomCode: string,
-): Promise<DynamoDB.DocumentClient.GetItemOutput> {
+async function getConnectionEntry(userToken: string, roomCode: string): Promise<DynamoDB.DocumentClient.GetItemOutput> {
     try {
-        const getParams = getConnectionOpereration(connectionId, roomCode);
+        const getParams = getConnectionOpereration(userToken, roomCode);
         return await ddbClient.get(getParams).promise();
     } catch (err) {
         console.error(err);

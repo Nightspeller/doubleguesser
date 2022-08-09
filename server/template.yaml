@@ -25,12 +25,12 @@ Resources:
         - Key: project
           Value: doubleguesser
       AttributeDefinitions:
-        - AttributeName: "connectionId"
+        - AttributeName: "userToken"
           AttributeType: "S"
         - AttributeName: "roomCode"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "connectionId"
+        - AttributeName: "userToken"
           KeyType: "HASH"
         - AttributeName: "roomCode"
           KeyType: "RANGE"
@@ -190,3 +190,38 @@ Resources:
         - aws-sdk
         EntryPoints: 
         - app.ts
+  RejoinRoomFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: RejoinRoomLambda
+      CodeUri: lambdas/rejoin-room/
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+          GAMES_TABLE_NAME: !Ref GameTableName
+      Policies:
+        - DynamoDBCrudPolicy: 
+            TableName: !Ref ConnectionTableName 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GameTableName
+      Events:
+        HelloWorld:
+          Type: Api 
+          Properties:
+            Path: /rejoin
+            Method: post
+    Metadata: 
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: false
+        External: 
+        - aws-sdk
+        EntryPoints: 
+        - app.ts
+

@@ -1,5 +1,5 @@
 {
-  "body": "{\"message\": \"hello world\", \"userToken\": \"gasd456574fgsdfg56krt\", \"roomCode\": \"e2c31\", \"gameState\":{\"currentRound\":1, \"roomCode\": \"533a3\", \"firstWord\":\"apple\",\"firstWordHinters\":[],\"firstWordSaboteurs\":[],\"guessers\":[],\"hints\":[\"gravity\",\"newton\"],\"readyToPresentHints\":false,\"players\":{},\"settings\":{\"mixWords\":false,\"moderation\":true,\"numberOfGuessers\":1,\"numberOfSaboteurs\":1,\"numberOfWords\":1,\"rounds\":10,\"timer\":60}}}",
+  "body": "{\"message\": \"hello world\", \"userToken\": \"4567wklerhgjkerhgjk\", \"roomCode\": \"28f7e\", \"gameState\":{\"currentRound\":1, \"roomCode\": \"28f7e\", \"firstWord\":\"apple\",\"firstWordHinters\":[],\"firstWordSaboteurs\":[],\"guessers\":[],\"hints\":[\"gravity\",\"newton\"],\"readyToPresentHints\":false,\"players\":{},\"settings\":{\"mixWords\":false,\"moderation\":true,\"numberOfGuessers\":1,\"numberOfSaboteurs\":1,\"numberOfWords\":1,\"rounds\":10,\"timer\":60}}}",
   "resource": "/{proxy+}",
   "path": "/path/to/resource",
   "httpMethod": "POST",
@@ -34,7 +34,7 @@
     "X-Forwarded-Proto": "https"
   },
   "requestContext": {
-	"connectionId": "=rt8y734t6l5hw260jwfg",
+	"connectionId": "=567werkjgkfsdgmn,",
     "accountId": "123456789012",
     "resourceId": "123456",
     "stage": "prod",

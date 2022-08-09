@@ -1,7 +1,7 @@
 {
-  "name": "create-room",
+  "name": "rejoin-room",
   "version": "1.0.0",
-  "description": "Create a double guesser room",
+  "description": "Rejoin a double guesser room",
   "main": "app.js",
   "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
   "author": "SAM CLI",
@@ -10,8 +10,7 @@
     "unit": "jest",
     "lint": "eslint '*.ts' --quiet --fix",
     "compile": "tsc",
-    "test": "npm run compile && npm run unit",
-	"start": "cd ../ && sam invoke local \"CreateRoomFunction\" -e events/event.json"
+    "test": "npm run compile && npm run unit"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.92",

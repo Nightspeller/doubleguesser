@@ -9,7 +9,7 @@ region = "us-east-2"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 disable_rollback = true
-parameter_overrides = "ConnectionTableName=\"doubleguesser_connections\""
+parameter_overrides = "ConnectionTableName=\"doubleguesser_connections\" GameTableName=\"doubleguesser_game_states\""
 image_repositories = []
 [default.build.parameters]
 beta_features = true

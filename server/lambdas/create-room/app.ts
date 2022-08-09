@@ -30,7 +30,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             statusCode: 200,
             body: JSON.stringify({
                 message: 'Success!',
-				roomCode
+                roomCode,
             }),
         };
     } catch (err) {
@@ -47,7 +47,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
 };
 
 function getShortRoomCode() {
-    return randomUUID().slice(0, 5);
+    return randomUUID().slice(0, 4);
 }
 
 function getConnectionPutOperation(

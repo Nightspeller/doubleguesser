@@ -11,10 +11,10 @@
     "lint": "eslint '*.ts' --quiet --fix",
     "compile": "tsc",
     "test": "npm run compile && npm run unit",
-	"start": "cd ../ && sam invoke local \"CreateRoomFunction\" -e events/event.json"
+    "start": "cd ../ && sam invoke local \"CreateRoomFunction\" -e events/event.json"
   },
   "devDependencies": {
-	"esbuild": "^0.14.14"
+    "esbuild": "^0.14.14"
   },
   "dependencies": {
   }

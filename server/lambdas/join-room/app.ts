@@ -58,7 +58,7 @@ function getConnectionPutOperation(
             roomCode,
             userToken,
         },
-        ConditionExpression: 'attribute_not_exists(userToken)', //Prevent users belonging to two rooms
+        ConditionExpression: 'attribute_not_exists(userToken) AND attribute_not_exists(connectionId)', //Prevent users belonging to two rooms
     };
 }
 

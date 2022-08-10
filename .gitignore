@@ -3,6 +3,7 @@
 /server/lambdas/leave-room/node_modules
 /server/lambdas/rejoin-room/node_modules
 /server/lambdas/update-game/node_modules
+/server/lambdas/handle-game-update/node_modules
 
 /server/.aws-sam
 
@@ -34,3 +35,4 @@ server/lambdas/join-room/.DS_Store
 server/lambdas/leave-room/.DS_Store
 server/lambdas/update-game/.DS_Store
 server/lambdas/create-room/.DS_Store
+server/lambdas/handle-game-update/.DS_Store

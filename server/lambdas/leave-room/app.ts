@@ -16,15 +16,15 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             throw new Error('Could not close connection. No connection ID.');
         }
 
-        const { userToken, roomCode } = JSON.parse(event.body || '').userToken;
-        if (!userToken) {
-            throw new Error('Could not remove user. No user token.');
-        }
-
-        if (!roomCode) {
-            throw new Error('Could not leave room. No room code provided.');
-        }
-
+        let { userToken, roomCode } = JSON.parse(event.body || '');
+		if (!userToken || !roomCode) {
+			//A graceful closure of the websocket will include these
+			//Otherwise we must retrieve the tables primary key ourselves
+			const entry = await getPrimaryKeyFromConnection(connectionId);
+			console.log(entry);
+			userToken = entry.userToken;
+			roomCode = entry.roomCode;
+		}
         await deleteUserConenction(userToken, roomCode);
         await updateGame(roomCode, userToken);
         response = {
@@ -54,6 +54,27 @@ function getConnectionDeleteOperation(userToken: string, roomCode: string): Dyna
             roomCode,
         },
     };
+}
+
+function getPrimaryKeyScanOperation(connectionId: string): DynamoDB.DocumentClient.ScanInput {
+	return {
+		TableName: process.env.CONNECTIONS_TABLE_NAME,
+		FilterExpression: '#connectionId = :connectionId',
+		ExpressionAttributeValues: { ':connectionId': connectionId },
+		ExpressionAttributeNames: {'#connectionId': 'connectionId'}
+	}
+}
+
+async function getPrimaryKeyFromConnection(connectionId: string) {
+	try {
+		const scanParams = getPrimaryKeyScanOperation(connectionId);
+		const result = await ddbClient.scan(scanParams).promise();
+		//The WebSocketAPI gaurentees that connectionId's are unique, so Items[0] should be fine here
+		return result.Items[0];
+	} catch (err) {
+		console.error(err);
+		throw new Error('Failed to retrieve primary key from connectionId. Could not remove user.');
+	}
 }
 
 async function deleteUserConenction(userToken: string, roomCode: string) {

@@ -54,6 +54,8 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
       TableName: !Ref GameTableName
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
   CreateRoomFunction:
     Type: AWS::Serverless::Function 
     Properties:
@@ -332,6 +334,25 @@ Resources:
       IntegrationUri: 
         Fn::Sub:
             arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateGameFunction.Arn}/invocations
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref DoubleGuesserWebSocket
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      OperationName: disconnect
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref DisconnectIntegration
+  DisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref DoubleGuesserWebSocket
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoomFunction.Arn}/invocations
   Deployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
@@ -340,6 +361,7 @@ Resources:
     - LeaveRoomRoute
     - RejoinRoomRoute
     - UpdateGameRoute
+    - DisconnectRoute
     Properties:
       ApiId: !Ref DoubleGuesserWebSocket
   Stage:
@@ -390,6 +412,49 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref UpdateGameFunction
       Principal: apigateway.amazonaws.com
+  HandleGameUpdateFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: HandleGameUpdateLambda
+      CodeUri: lambdas/handle-game-update/
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+          GAMES_TABLE_NAME: !Ref GameTableName
+          WEBSOCKET_ENDPOINT: !Join [ '', [ !Ref DoubleGuesserWebSocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]
+      Policies:
+        - DynamoDBCrudPolicy: 
+            TableName: !Ref ConnectionTableName 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GameTableName
+        - Statement:
+          - Effect: Allow
+            Action:
+            - 'execute-api:ManageConnections'
+            Resource:
+            - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DoubleGuesserWebSocket}/*'
+      Events:
+        GameUpdate:
+          Type: DynamoDB 
+          Properties:
+            StartingPosition: LATEST
+            Stream: 
+              !GetAtt GamesTable.StreamArn
+    Metadata: 
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: false
+        External: 
+        - aws-sdk
+        - aws-lambda
+        EntryPoints: 
+        - app.ts
 
 Outputs:
   WebSocketURI:

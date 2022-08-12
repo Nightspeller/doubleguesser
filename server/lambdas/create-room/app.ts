@@ -34,7 +34,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             }),
         };
     } catch (err) {
-        console.log(err);
+        console.error(err);
         response = {
             statusCode: 500,
             body: JSON.stringify({
@@ -56,13 +56,13 @@ function getConnectionPutOperation(
     userToken: string,
 ): DynamoDB.DocumentClient.PutItemInput {
     return {
-        TableName: process.env.CONNECTIONS_TABLE_NAME || '',
+        TableName: process.env.CONNECTIONS_TABLE_NAME as string,
         Item: {
             connectionId,
             roomCode,
             userToken,
         },
-        ConditionExpression: 'attribute_not_exists(roomCode) AND attribute_not_exists(userToken) AND attribute_not_exists(connectionId)', //Prevent roomCode collisions and users having two rooms
+        ConditionExpression: 'attribute_not_exists(roomCode) AND attribute_not_exists(userToken)', //Prevent roomCode collisions and users having two rooms
     };
 }
 
@@ -72,7 +72,7 @@ async function storeUserConenction(connectionId: string, roomCode: string, userT
         await ddbClient.put(putParams).promise();
         return roomCode;
     } catch (err) {
-        console.log(err);
+        console.error(err);
         throw new Error('Failed to save user connection.');
     }
 }
@@ -83,7 +83,7 @@ async function storeNewGame(roomCode: string, userToken: string) {
         const putParams = getGamePutOpertaion(game);
         await ddbClient.put(putParams).promise();
     } catch (err) {
-        console.log(err);
+        console.error(err);
         throw new Error('Failed to create new game state.');
     }
 }

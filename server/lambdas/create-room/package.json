@@ -1,21 +1,17 @@
 {
-  "name": "create-room",
-  "version": "1.0.0",
-  "description": "Create a double guesser room",
-  "main": "app.js",
-  "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
-  "author": "SAM CLI",
-  "license": "MIT",
-  "scripts": {
-    "unit": "jest",
-    "lint": "eslint '*.ts' --quiet --fix",
-    "compile": "tsc",
-    "test": "npm run compile && npm run unit",
-    "start": "cd ../ && sam invoke local \"CreateRoomFunction\" -e events/event.json"
-  },
-  "devDependencies": {
-    "esbuild": "^0.14.14"
-  },
-  "dependencies": {
-  }
+    "name": "create-room",
+    "version": "1.0.0",
+    "description": "Create a double guesser room",
+    "main": "app.js",
+    "author": "SAM CLI",
+    "license": "MIT",
+    "scripts": {
+        "unit": "jest",
+        "lint": "eslint '*.ts' --quiet --fix",
+        "compile": "tsc",
+        "test": "npm run compile && npm run unit",
+        "start": "cd ../ && sam invoke local \"CreateRoomFunction\" -e events/event.json"
+    },
+    "devDependencies": {},
+    "dependencies": {}
 }

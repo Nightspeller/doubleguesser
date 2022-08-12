@@ -16,25 +16,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             throw new Error('Could not close connection. No connection ID.');
         }
 
-        const body = JSON.parse(event.body || '');
-
-        const userToken = body.userToken;
-        if (!userToken) {
-            throw new Error('Could not remove user. No user token.');
-        }
-
-        const roomCode = body.roomCode;
-        if (!roomCode) {
-            //TODO this should not throw an error
-            //Retrieve roomCode using the connectionID via query
-            throw new Error('Could not leave room. No room code provided.');
-        }
-
-        const gameState = body.gameState;
-        if (!gameState) {
-            throw new Error('Could not update game state. No new state recieved.');
-        }
-
+        const { userToken, roomCode, gameState } = JSON.parse(event.body || '');
         const isAuthenticated = await authenticateUserUpdate(userToken, connectionId, roomCode, gameState);
         if (!isAuthenticated) {
             response = {
@@ -89,12 +71,22 @@ async function updateGameState(gameState: string) {
  * 2) The update is a valid game update (TODO - would require complicated business logic)
  */
 async function authenticateUserUpdate(
-    userToken: string,
+    userToken: string | undefined,
     connectionId: string,
-    roomCode: string,
-    gameState: any,
+    roomCode: string | undefined,
+    gameState: any | undefined,
 ): Promise<boolean> {
-    const connectionEntry = await getConnectionEntry(userToken, roomCode);
+    if (!userToken) {
+        throw new Error('Could not update game state. No user token provided.');
+    }
+    if (!gameState) {
+        throw new Error('Could not update game state. No room code provided.');
+    }
+    if (!gameState) {
+        throw new Error('Could not update game state. No new state provided.');
+    }
+
+    const connectionEntry = await getConnectionEntry(userToken, roomCode as string);
     const item = connectionEntry?.Item;
     if (item?.connectionId !== connectionId) {
         return false;

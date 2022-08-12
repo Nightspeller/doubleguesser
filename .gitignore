@@ -36,3 +36,7 @@ server/lambdas/leave-room/.DS_Store
 server/lambdas/update-game/.DS_Store
 server/lambdas/create-room/.DS_Store
 server/lambdas/handle-game-update/.DS_Store
+
+node_modules/
+server/node_modules
+server/dist

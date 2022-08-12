@@ -34,7 +34,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             }),
         };
     } catch (err) {
-        console.log(err);
+        console.error(err);
         response = {
             statusCode: 500,
             body: JSON.stringify({
@@ -68,7 +68,7 @@ async function storeUserConenction(connectionId: string, roomCode: string, userT
         await ddbClient.put(putParams).promise();
         return roomCode;
     } catch (err) {
-        console.log(err);
+        console.error(err);
         throw new Error('Failed to save user connection.');
     }
 }
@@ -96,7 +96,7 @@ async function updateGame(roomCode: string, userToken: string) {
         const updateParams = getGameUpdateCommand(roomCode, userToken);
         await ddbClient.update(updateParams).promise();
     } catch (err) {
-        console.log(err);
+        console.error(err);
         throw new Error('Failed to update game state.');
     }
 }

@@ -1,20 +1,16 @@
 {
-  "name": "update game",
-  "version": "1.0.0",
-  "description": "set a double guesser game state",
-  "main": "app.js",
-  "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
-  "author": "SAM CLI",
-  "license": "MIT",
-  "scripts": {
-    "unit": "jest",
-    "lint": "eslint '*.ts' --quiet --fix",
-    "compile": "tsc",
-    "test": "npm run compile && npm run unit"
-  },
-  "devDependencies": {
-	"esbuild": "^0.14.14"
-  },
-  "dependencies": {
-  }
+    "name": "update-game",
+    "version": "1.0.0",
+    "description": "set a double guesser game state",
+    "main": "app.js",
+    "author": "SAM CLI",
+    "license": "MIT",
+    "scripts": {
+        "unit": "jest",
+        "lint": "eslint '*.ts' --quiet --fix",
+        "compile": "tsc",
+        "test": "npm run compile && npm run unit"
+    },
+    "devDependencies": {},
+    "dependencies": {}
 }

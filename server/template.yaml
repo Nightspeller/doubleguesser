@@ -1,462 +1,476 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Infrastructure for the game Double Guesser by Sergei Sidorov 
-  
+    Infrastructure for the game Double Guesser by Sergei Sidorov
+
 Globals:
-  Function:
-    Timeout: 30
-    Tags:
-      project: doubleguesser
+    Function:
+        Timeout: 30
+        Tags:
+            project: doubleguesser
 
 Parameters:
-  ConnectionTableName:
-    Type: String
-    Default: 'doubleguesser_connections'  
-  GameTableName:
-    Type: String
-    Default: 'doubleguesser_game_states'
+    ConnectionTableName:
+        Type: String
+        Default: 'doubleguesser_connections'
+    GameTableName:
+        Type: String
+        Default: 'doubleguesser_game_states'
 
 Resources:
-  ConnectionsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      Tags:
-        - Key: project
-          Value: doubleguesser
-      AttributeDefinitions:
-        - AttributeName: "userToken"
-          AttributeType: "S"
-        - AttributeName: "roomCode"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "userToken"
-          KeyType: "HASH"
-        - AttributeName: "roomCode"
-          KeyType: "RANGE"
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      TableName: !Ref ConnectionTableName
-  GamesTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      Tags:
-        - Key: project
-          Value: doubleguesser
-      AttributeDefinitions:
-        - AttributeName: "roomCode"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "roomCode"
-          KeyType: "HASH"
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      TableName: !Ref GameTableName
-      StreamSpecification:
-        StreamViewType: NEW_IMAGE
-  CreateRoomFunction:
-    Type: AWS::Serverless::Function 
-    Properties:
-      FunctionName: CreateRoomLambda
-      CodeUri: lambdas/create-room/
-      Handler: app.lambdaHandler
-      Runtime: nodejs16.x
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-          GAMES_TABLE_NAME: !Ref GameTableName
-      Policies:
-        - DynamoDBCrudPolicy: 
-            TableName: !Ref ConnectionTableName 
-        - DynamoDBCrudPolicy:
+    ConnectionsTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            Tags:
+                - Key: project
+                  Value: doubleguesser
+            AttributeDefinitions:
+                - AttributeName: 'userToken'
+                  AttributeType: 'S'
+                - AttributeName: 'roomCode'
+                  AttributeType: 'S'
+            KeySchema:
+                - AttributeName: 'userToken'
+                  KeyType: 'HASH'
+                - AttributeName: 'roomCode'
+                  KeyType: 'RANGE'
+            ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
+            TableName: !Ref ConnectionTableName
+    GamesTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            Tags:
+                - Key: project
+                  Value: doubleguesser
+            AttributeDefinitions:
+                - AttributeName: 'roomCode'
+                  AttributeType: 'S'
+            KeySchema:
+                - AttributeName: 'roomCode'
+                  KeyType: 'HASH'
+            ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
             TableName: !Ref GameTableName
-      Events:
-        HelloWorld:
-          Type: Api 
-          Properties:
-            Path: /create-room
-            Method: post
-    Metadata: 
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: false
-        External: 
-        - aws-sdk
-        - aws-lambda
-        EntryPoints: 
-        - app.ts
-  JoinRoomFunction:
-    Type: AWS::Serverless::Function 
-    Properties:
-      FunctionName: JoinRoomLambda
-      CodeUri: lambdas/join-room/
-      Handler: app.lambdaHandler
-      Runtime: nodejs16.x
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-          GAMES_TABLE_NAME: !Ref GameTableName
-      Policies:
-        - DynamoDBCrudPolicy: 
-            TableName: !Ref ConnectionTableName 
-        - DynamoDBCrudPolicy:
-            TableName: !Ref GameTableName
-      Events:
-        HelloWorld:
-          Type: Api 
-          Properties:
-            Path: /join-room
-            Method: post
-    Metadata: 
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: false
-        External: 
-        - aws-sdk
-        - aws-lambda
-        EntryPoints: 
-        - app.ts
-  LeaveRoomFunction:
-    Type: AWS::Serverless::Function 
-    Properties:
-      FunctionName: LeaveRoomLambda
-      CodeUri: lambdas/leave-room/
-      Handler: app.lambdaHandler
-      Runtime: nodejs16.x
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-          GAMES_TABLE_NAME: !Ref GameTableName
-      Policies:
-        - DynamoDBCrudPolicy: 
-            TableName: !Ref ConnectionTableName 
-        - DynamoDBCrudPolicy:
-            TableName: !Ref GameTableName
-      Events:
-        HelloWorld:
-          Type: Api 
-          Properties:
-            Path: /leave-room
-            Method: post
-    Metadata: 
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: false
-        External: 
-        - aws-sdk
-        - aws-lambda
-        EntryPoints: 
-        - app.ts
-  UpdateGameFunction:
-    Type: AWS::Serverless::Function 
-    Properties:
-      FunctionName: UpdateGameLambda
-      CodeUri: lambdas/update-game/
-      Handler: app.lambdaHandler
-      Runtime: nodejs16.x
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-          GAMES_TABLE_NAME: !Ref GameTableName
-      Policies:
-        - DynamoDBCrudPolicy: 
-            TableName: !Ref ConnectionTableName 
-        - DynamoDBCrudPolicy:
-            TableName: !Ref GameTableName
-      Events:
-        HelloWorld:
-          Type: Api 
-          Properties:
-            Path: /update-game
-            Method: post
-    Metadata: 
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: false
-        External: 
-        - aws-sdk
-        - aws-lambda
-        EntryPoints: 
-        - app.ts
-  RejoinRoomFunction:
-    Type: AWS::Serverless::Function 
-    Properties:
-      FunctionName: RejoinRoomLambda
-      CodeUri: lambdas/rejoin-room/
-      Handler: app.lambdaHandler
-      Runtime: nodejs16.x
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-          GAMES_TABLE_NAME: !Ref GameTableName
-      Policies:
-        - DynamoDBCrudPolicy: 
-            TableName: !Ref ConnectionTableName 
-        - DynamoDBCrudPolicy:
-            TableName: !Ref GameTableName
-      Events:
-        HelloWorld:
-          Type: Api 
-          Properties:
-            Path: /rejoin
-            Method: post
-    Metadata: 
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: false
-        External: 
-        - aws-sdk
-        - aws-lambda
-        EntryPoints: 
-        - app.ts
-  DoubleGuesserWebSocket:
-    Type: AWS::ApiGatewayV2::Api
-    Properties:
-      Tags:
-        project: doubleguesser
-      Name: DoubleGuesserWebSocket
-      ProtocolType: WEBSOCKET
-      RouteSelectionExpression: "$request.body.action"
-  CreateRoomRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      RouteKey: createRoom
-      AuthorizationType: NONE
-      OperationName: createRoom
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref CreateRoomIntegration
-  CreateRoomIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      IntegrationType: AWS_PROXY
-      IntegrationUri: 
-        Fn::Sub:
-            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateRoomFunction.Arn}/invocations
-  JoinRoomRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      RouteKey: joinRoom
-      AuthorizationType: NONE
-      OperationName: joinRoom
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref JoinRoomIntegration
-  JoinRoomIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      IntegrationType: AWS_PROXY
-      IntegrationUri: 
-        Fn::Sub:
-            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JoinRoomFunction.Arn}/invocations
-  LeaveRoomRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      RouteKey: leaveRoom
-      AuthorizationType: NONE
-      OperationName: leaveRoom
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref LeaveRoomIntegration
-  LeaveRoomIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      IntegrationType: AWS_PROXY
-      IntegrationUri: 
-        Fn::Sub:
-            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoomFunction.Arn}/invocations
-  RejoinRoomRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      RouteKey: rejoinRoom
-      AuthorizationType: NONE
-      OperationName: rejoinRoom
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref RejoinRoomIntegration
-  RejoinRoomIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      IntegrationType: AWS_PROXY
-      IntegrationUri: 
-        Fn::Sub:
-            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RejoinRoomFunction.Arn}/invocations
-  UpdateGameRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      RouteKey: updateGame
-      AuthorizationType: NONE
-      OperationName: updateGame
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref UpdateGameIntegration
-  UpdateGameIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      IntegrationType: AWS_PROXY
-      IntegrationUri: 
-        Fn::Sub:
-            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateGameFunction.Arn}/invocations
-  DisconnectRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      RouteKey: $disconnect
-      AuthorizationType: NONE
-      OperationName: disconnect
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref DisconnectIntegration
-  DisconnectIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-      IntegrationType: AWS_PROXY
-      IntegrationUri:
-        Fn::Sub:
-            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoomFunction.Arn}/invocations
-  Deployment:
-    Type: AWS::ApiGatewayV2::Deployment
-    DependsOn:
-    - CreateRoomRoute
-    - JoinRoomRoute
-    - LeaveRoomRoute
-    - RejoinRoomRoute
-    - UpdateGameRoute
-    - DisconnectRoute
-    Properties:
-      ApiId: !Ref DoubleGuesserWebSocket
-  Stage:
-    Type: AWS::ApiGatewayV2::Stage
-    Properties:
-      StageName: Dev
-      DeploymentId: !Ref Deployment
-      ApiId: !Ref DoubleGuesserWebSocket
-      Tags:
-        project: doubleguesser
-  CreateRoomPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - DoubleGuesserWebSocket
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref CreateRoomFunction
-      Principal: apigateway.amazonaws.com
-  JoinRoomPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - DoubleGuesserWebSocket
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref JoinRoomFunction
-      Principal: apigateway.amazonaws.com
-  LeaveRoomPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - DoubleGuesserWebSocket
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref LeaveRoomFunction
-      Principal: apigateway.amazonaws.com
-  RejoinRoomPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - DoubleGuesserWebSocket
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref RejoinRoomFunction
-      Principal: apigateway.amazonaws.com
-  UpdateGamePermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - DoubleGuesserWebSocket
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref UpdateGameFunction
-      Principal: apigateway.amazonaws.com
-  HandleGameUpdateFunction:
-    Type: AWS::Serverless::Function 
-    Properties:
-      FunctionName: HandleGameUpdateLambda
-      CodeUri: lambdas/handle-game-update/
-      Handler: app.lambdaHandler
-      Runtime: nodejs16.x
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-          GAMES_TABLE_NAME: !Ref GameTableName
-          WEBSOCKET_ENDPOINT: !Join [ '', [ !Ref DoubleGuesserWebSocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]
-      Policies:
-        - DynamoDBCrudPolicy: 
-            TableName: !Ref ConnectionTableName 
-        - DynamoDBCrudPolicy:
-            TableName: !Ref GameTableName
-        - Statement:
-          - Effect: Allow
-            Action:
-            - 'execute-api:ManageConnections'
-            Resource:
-            - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DoubleGuesserWebSocket}/*'
-      Events:
-        GameUpdate:
-          Type: DynamoDB 
-          Properties:
-            StartingPosition: LATEST
-            Stream: 
-              !GetAtt GamesTable.StreamArn
-    Metadata: 
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: false
-        External: 
-        - aws-sdk
-        - aws-lambda
-        EntryPoints: 
-        - app.ts
+            StreamSpecification:
+                StreamViewType: NEW_IMAGE
+    CreateRoomFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            FunctionName: CreateRoomLambda
+            CodeUri: lambdas/create-room/
+            Handler: app.lambdaHandler
+            Runtime: nodejs16.x
+            Architectures:
+                - x86_64
+            Environment:
+                Variables:
+                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+                    GAMES_TABLE_NAME: !Ref GameTableName
+            Policies:
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref ConnectionTableName
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref GameTableName
+            Events:
+                HelloWorld:
+                    Type: Api
+                    Properties:
+                        Path: /create-room
+                        Method: post
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                External:
+                    - aws-sdk
+                    - aws-lambda
+                EntryPoints:
+                    - app.ts
+    JoinRoomFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            FunctionName: JoinRoomLambda
+            CodeUri: lambdas/join-room/
+            Handler: app.lambdaHandler
+            Runtime: nodejs16.x
+            Architectures:
+                - x86_64
+            Environment:
+                Variables:
+                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+                    GAMES_TABLE_NAME: !Ref GameTableName
+            Policies:
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref ConnectionTableName
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref GameTableName
+            Events:
+                HelloWorld:
+                    Type: Api
+                    Properties:
+                        Path: /join-room
+                        Method: post
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                External:
+                    - aws-sdk
+                    - aws-lambda
+                EntryPoints:
+                    - app.ts
+    LeaveRoomFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            FunctionName: LeaveRoomLambda
+            CodeUri: lambdas/leave-room/
+            Handler: app.lambdaHandler
+            Runtime: nodejs16.x
+            Architectures:
+                - x86_64
+            Environment:
+                Variables:
+                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+                    GAMES_TABLE_NAME: !Ref GameTableName
+            Policies:
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref ConnectionTableName
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref GameTableName
+            Events:
+                HelloWorld:
+                    Type: Api
+                    Properties:
+                        Path: /leave-room
+                        Method: post
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                External:
+                    - aws-sdk
+                    - aws-lambda
+                EntryPoints:
+                    - app.ts
+    UpdateGameFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            FunctionName: UpdateGameLambda
+            CodeUri: lambdas/update-game/
+            Handler: app.lambdaHandler
+            Runtime: nodejs16.x
+            Architectures:
+                - x86_64
+            Environment:
+                Variables:
+                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+                    GAMES_TABLE_NAME: !Ref GameTableName
+            Policies:
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref ConnectionTableName
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref GameTableName
+            Events:
+                HelloWorld:
+                    Type: Api
+                    Properties:
+                        Path: /update-game
+                        Method: post
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                External:
+                    - aws-sdk
+                    - aws-lambda
+                EntryPoints:
+                    - app.ts
+    RejoinRoomFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            FunctionName: RejoinRoomLambda
+            CodeUri: lambdas/rejoin-room/
+            Handler: app.lambdaHandler
+            Runtime: nodejs16.x
+            Architectures:
+                - x86_64
+            Environment:
+                Variables:
+                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+                    GAMES_TABLE_NAME: !Ref GameTableName
+            Policies:
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref ConnectionTableName
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref GameTableName
+            Events:
+                HelloWorld:
+                    Type: Api
+                    Properties:
+                        Path: /rejoin
+                        Method: post
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                External:
+                    - aws-sdk
+                    - aws-lambda
+                EntryPoints:
+                    - app.ts
+    DoubleGuesserWebSocket:
+        Type: AWS::ApiGatewayV2::Api
+        Properties:
+            Tags:
+                project: doubleguesser
+            Name: DoubleGuesserWebSocket
+            ProtocolType: WEBSOCKET
+            RouteSelectionExpression: '$request.body.action'
+    CreateRoomRoute:
+        Type: AWS::ApiGatewayV2::Route
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            RouteKey: createRoom
+            AuthorizationType: NONE
+            OperationName: createRoom
+            Target: !Join
+                - '/'
+                - - 'integrations'
+                  - !Ref CreateRoomIntegration
+    CreateRoomIntegration:
+        Type: AWS::ApiGatewayV2::Integration
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            IntegrationType: AWS_PROXY
+            IntegrationUri:
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateRoomFunction.Arn}/invocations
+    JoinRoomRoute:
+        Type: AWS::ApiGatewayV2::Route
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            RouteKey: joinRoom
+            AuthorizationType: NONE
+            OperationName: joinRoom
+            Target: !Join
+                - '/'
+                - - 'integrations'
+                  - !Ref JoinRoomIntegration
+    JoinRoomIntegration:
+        Type: AWS::ApiGatewayV2::Integration
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            IntegrationType: AWS_PROXY
+            IntegrationUri:
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JoinRoomFunction.Arn}/invocations
+    LeaveRoomRoute:
+        Type: AWS::ApiGatewayV2::Route
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            RouteKey: leaveRoom
+            AuthorizationType: NONE
+            OperationName: leaveRoom
+            Target: !Join
+                - '/'
+                - - 'integrations'
+                  - !Ref LeaveRoomIntegration
+    LeaveRoomIntegration:
+        Type: AWS::ApiGatewayV2::Integration
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            IntegrationType: AWS_PROXY
+            IntegrationUri:
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoomFunction.Arn}/invocations
+    RejoinRoomRoute:
+        Type: AWS::ApiGatewayV2::Route
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            RouteKey: rejoinRoom
+            AuthorizationType: NONE
+            OperationName: rejoinRoom
+            Target: !Join
+                - '/'
+                - - 'integrations'
+                  - !Ref RejoinRoomIntegration
+    RejoinRoomIntegration:
+        Type: AWS::ApiGatewayV2::Integration
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            IntegrationType: AWS_PROXY
+            IntegrationUri:
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RejoinRoomFunction.Arn}/invocations
+    UpdateGameRoute:
+        Type: AWS::ApiGatewayV2::Route
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            RouteKey: updateGame
+            AuthorizationType: NONE
+            OperationName: updateGame
+            Target: !Join
+                - '/'
+                - - 'integrations'
+                  - !Ref UpdateGameIntegration
+    UpdateGameIntegration:
+        Type: AWS::ApiGatewayV2::Integration
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            IntegrationType: AWS_PROXY
+            IntegrationUri:
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateGameFunction.Arn}/invocations
+    DisconnectRoute:
+        Type: AWS::ApiGatewayV2::Route
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            RouteKey: $disconnect
+            AuthorizationType: NONE
+            OperationName: disconnect
+            Target: !Join
+                - '/'
+                - - 'integrations'
+                  - !Ref DisconnectIntegration
+    DisconnectIntegration:
+        Type: AWS::ApiGatewayV2::Integration
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+            IntegrationType: AWS_PROXY
+            IntegrationUri:
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoomFunction.Arn}/invocations
+    Deployment:
+        Type: AWS::ApiGatewayV2::Deployment
+        DependsOn:
+            - CreateRoomRoute
+            - JoinRoomRoute
+            - LeaveRoomRoute
+            - RejoinRoomRoute
+            - UpdateGameRoute
+            - DisconnectRoute
+        Properties:
+            ApiId: !Ref DoubleGuesserWebSocket
+    Stage:
+        Type: AWS::ApiGatewayV2::Stage
+        Properties:
+            StageName: Dev
+            DeploymentId: !Ref Deployment
+            ApiId: !Ref DoubleGuesserWebSocket
+            Tags:
+                project: doubleguesser
+    CreateRoomPermission:
+        Type: AWS::Lambda::Permission
+        DependsOn:
+            - DoubleGuesserWebSocket
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !Ref CreateRoomFunction
+            Principal: apigateway.amazonaws.com
+    JoinRoomPermission:
+        Type: AWS::Lambda::Permission
+        DependsOn:
+            - DoubleGuesserWebSocket
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !Ref JoinRoomFunction
+            Principal: apigateway.amazonaws.com
+    LeaveRoomPermission:
+        Type: AWS::Lambda::Permission
+        DependsOn:
+            - DoubleGuesserWebSocket
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !Ref LeaveRoomFunction
+            Principal: apigateway.amazonaws.com
+    RejoinRoomPermission:
+        Type: AWS::Lambda::Permission
+        DependsOn:
+            - DoubleGuesserWebSocket
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !Ref RejoinRoomFunction
+            Principal: apigateway.amazonaws.com
+    UpdateGamePermission:
+        Type: AWS::Lambda::Permission
+        DependsOn:
+            - DoubleGuesserWebSocket
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !Ref UpdateGameFunction
+            Principal: apigateway.amazonaws.com
+    HandleGameUpdateFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            FunctionName: HandleGameUpdateLambda
+            CodeUri: lambdas/handle-game-update/
+            Handler: app.lambdaHandler
+            Runtime: nodejs16.x
+            Architectures:
+                - x86_64
+            Environment:
+                Variables:
+                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+                    GAMES_TABLE_NAME: !Ref GameTableName
+                    WEBSOCKET_ENDPOINT:
+                        !Join [
+                            '',
+                            [
+                                !Ref DoubleGuesserWebSocket,
+                                '.execute-api.',
+                                !Ref 'AWS::Region',
+                                '.amazonaws.com/',
+                                !Ref 'Stage',
+                            ],
+                        ]
+            Policies:
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref ConnectionTableName
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref GameTableName
+                - Statement:
+                      - Effect: Allow
+                        Action:
+                            - 'execute-api:ManageConnections'
+                        Resource:
+                            - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DoubleGuesserWebSocket}/*'
+            Events:
+                GameUpdate:
+                    Type: DynamoDB
+                    Properties:
+                        StartingPosition: LATEST
+                        Stream: !GetAtt GamesTable.StreamArn
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                External:
+                    - aws-sdk
+                    - aws-lambda
+                EntryPoints:
+                    - app.ts
 
 Outputs:
-  WebSocketURI:
-    Description: "The WSS Protocol URI to connect to"
-    Value: !Join [ '', [ 'wss://', !Ref DoubleGuesserWebSocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]
+    WebSocketURI:
+        Description: 'The WSS Protocol URI to connect to'
+        Value:
+            !Join [
+                '',
+                [
+                    'wss://',
+                    !Ref DoubleGuesserWebSocket,
+                    '.execute-api.',
+                    !Ref 'AWS::Region',
+                    '.amazonaws.com/',
+                    !Ref 'Stage',
+                ],
+            ]

@@ -18,44 +18,38 @@ Parameters:
         Default: 'doubleguesser_game_states'
 
 Resources:
-    ConnectionsTable:
-        Type: AWS::DynamoDB::Table
+    TablesTemplate:
+        Type: AWS::CloudFormation::Stack
+        DeletionPolicy: Retain
         Properties:
+            TemplateURL: SAM_templates/tables/template.yaml
             Tags:
                 - Key: project
                   Value: doubleguesser
-            AttributeDefinitions:
-                - AttributeName: 'userToken'
-                  AttributeType: 'S'
-                - AttributeName: 'roomCode'
-                  AttributeType: 'S'
-            KeySchema:
-                - AttributeName: 'userToken'
-                  KeyType: 'HASH'
-                - AttributeName: 'roomCode'
-                  KeyType: 'RANGE'
-            ProvisionedThroughput:
-                ReadCapacityUnits: 5
-                WriteCapacityUnits: 5
-            TableName: !Ref ConnectionTableName
-    GamesTable:
-        Type: AWS::DynamoDB::Table
+            Parameters:
+                ConnectionTableName: !Ref ConnectionTableName
+                GameTableName: !Ref GameTableName
+    ApiTemplate:
+        Type: AWS::CloudFormation::Stack
+        DeletionPolicy: Retain
+        DependsOn:
+            - CreateRoomFunction
+            - JoinRoomFunction
+            - LeaveRoomFunction
+            - RejoinRoomFunction
+            - UpdateGameFunction
         Properties:
+            TemplateURL: SAM_templates/api/template.yaml
             Tags:
                 - Key: project
                   Value: doubleguesser
-            AttributeDefinitions:
-                - AttributeName: 'roomCode'
-                  AttributeType: 'S'
-            KeySchema:
-                - AttributeName: 'roomCode'
-                  KeyType: 'HASH'
-            ProvisionedThroughput:
-                ReadCapacityUnits: 5
-                WriteCapacityUnits: 5
-            TableName: !Ref GameTableName
-            StreamSpecification:
-                StreamViewType: NEW_IMAGE
+            Parameters:
+                CreateRoom: !GetAtt CreateRoomFunction.Arn
+                JoinRoom: !GetAtt JoinRoomFunction.Arn
+                LeaveRoom: !GetAtt LeaveRoomFunction.Arn
+                RejoinRoom: !GetAtt RejoinRoomFunction.Arn
+                UpdateGame: !GetAtt UpdateGameFunction.Arn
+
     CreateRoomFunction:
         Type: AWS::Serverless::Function
         Properties:
@@ -231,145 +225,11 @@ Resources:
                     - aws-lambda
                 EntryPoints:
                     - app.ts
-    DoubleGuesserWebSocket:
-        Type: AWS::ApiGatewayV2::Api
-        Properties:
-            Tags:
-                project: doubleguesser
-            Name: DoubleGuesserWebSocket
-            ProtocolType: WEBSOCKET
-            RouteSelectionExpression: '$request.body.action'
-    CreateRoomRoute:
-        Type: AWS::ApiGatewayV2::Route
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            RouteKey: createRoom
-            AuthorizationType: NONE
-            OperationName: createRoom
-            Target: !Join
-                - '/'
-                - - 'integrations'
-                  - !Ref CreateRoomIntegration
-    CreateRoomIntegration:
-        Type: AWS::ApiGatewayV2::Integration
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            IntegrationType: AWS_PROXY
-            IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateRoomFunction.Arn}/invocations
-    JoinRoomRoute:
-        Type: AWS::ApiGatewayV2::Route
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            RouteKey: joinRoom
-            AuthorizationType: NONE
-            OperationName: joinRoom
-            Target: !Join
-                - '/'
-                - - 'integrations'
-                  - !Ref JoinRoomIntegration
-    JoinRoomIntegration:
-        Type: AWS::ApiGatewayV2::Integration
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            IntegrationType: AWS_PROXY
-            IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JoinRoomFunction.Arn}/invocations
-    LeaveRoomRoute:
-        Type: AWS::ApiGatewayV2::Route
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            RouteKey: leaveRoom
-            AuthorizationType: NONE
-            OperationName: leaveRoom
-            Target: !Join
-                - '/'
-                - - 'integrations'
-                  - !Ref LeaveRoomIntegration
-    LeaveRoomIntegration:
-        Type: AWS::ApiGatewayV2::Integration
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            IntegrationType: AWS_PROXY
-            IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoomFunction.Arn}/invocations
-    RejoinRoomRoute:
-        Type: AWS::ApiGatewayV2::Route
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            RouteKey: rejoinRoom
-            AuthorizationType: NONE
-            OperationName: rejoinRoom
-            Target: !Join
-                - '/'
-                - - 'integrations'
-                  - !Ref RejoinRoomIntegration
-    RejoinRoomIntegration:
-        Type: AWS::ApiGatewayV2::Integration
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            IntegrationType: AWS_PROXY
-            IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RejoinRoomFunction.Arn}/invocations
-    UpdateGameRoute:
-        Type: AWS::ApiGatewayV2::Route
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            RouteKey: updateGame
-            AuthorizationType: NONE
-            OperationName: updateGame
-            Target: !Join
-                - '/'
-                - - 'integrations'
-                  - !Ref UpdateGameIntegration
-    UpdateGameIntegration:
-        Type: AWS::ApiGatewayV2::Integration
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            IntegrationType: AWS_PROXY
-            IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateGameFunction.Arn}/invocations
-    DisconnectRoute:
-        Type: AWS::ApiGatewayV2::Route
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            RouteKey: $disconnect
-            AuthorizationType: NONE
-            OperationName: disconnect
-            Target: !Join
-                - '/'
-                - - 'integrations'
-                  - !Ref DisconnectIntegration
-    DisconnectIntegration:
-        Type: AWS::ApiGatewayV2::Integration
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-            IntegrationType: AWS_PROXY
-            IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoomFunction.Arn}/invocations
-    Deployment:
-        Type: AWS::ApiGatewayV2::Deployment
-        DependsOn:
-            - CreateRoomRoute
-            - JoinRoomRoute
-            - LeaveRoomRoute
-            - RejoinRoomRoute
-            - UpdateGameRoute
-            - DisconnectRoute
-        Properties:
-            ApiId: !Ref DoubleGuesserWebSocket
-    Stage:
-        Type: AWS::ApiGatewayV2::Stage
-        Properties:
-            StageName: Dev
-            DeploymentId: !Ref Deployment
-            ApiId: !Ref DoubleGuesserWebSocket
-            Tags:
-                project: doubleguesser
+
     CreateRoomPermission:
         Type: AWS::Lambda::Permission
         DependsOn:
-            - DoubleGuesserWebSocket
+            - ApiTemplate
         Properties:
             Action: lambda:InvokeFunction
             FunctionName: !Ref CreateRoomFunction
@@ -377,7 +237,7 @@ Resources:
     JoinRoomPermission:
         Type: AWS::Lambda::Permission
         DependsOn:
-            - DoubleGuesserWebSocket
+            - ApiTemplate
         Properties:
             Action: lambda:InvokeFunction
             FunctionName: !Ref JoinRoomFunction
@@ -385,7 +245,7 @@ Resources:
     LeaveRoomPermission:
         Type: AWS::Lambda::Permission
         DependsOn:
-            - DoubleGuesserWebSocket
+            - ApiTemplate
         Properties:
             Action: lambda:InvokeFunction
             FunctionName: !Ref LeaveRoomFunction
@@ -393,7 +253,7 @@ Resources:
     RejoinRoomPermission:
         Type: AWS::Lambda::Permission
         DependsOn:
-            - DoubleGuesserWebSocket
+            - ApiTemplate
         Properties:
             Action: lambda:InvokeFunction
             FunctionName: !Ref RejoinRoomFunction
@@ -401,7 +261,7 @@ Resources:
     UpdateGamePermission:
         Type: AWS::Lambda::Permission
         DependsOn:
-            - DoubleGuesserWebSocket
+            - ApiTemplate
         Properties:
             Action: lambda:InvokeFunction
             FunctionName: !Ref UpdateGameFunction
@@ -423,11 +283,11 @@ Resources:
                         !Join [
                             '',
                             [
-                                !Ref DoubleGuesserWebSocket,
+                                !GetAtt ApiTemplate.Outputs.DoubleGuesserWebSocket,
                                 '.execute-api.',
                                 !Ref 'AWS::Region',
                                 '.amazonaws.com/',
-                                !Ref 'Stage',
+                                !GetAtt ApiTemplate.Outputs.Stage,
                             ],
                         ]
             Policies:
@@ -440,13 +300,13 @@ Resources:
                         Action:
                             - 'execute-api:ManageConnections'
                         Resource:
-                            - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DoubleGuesserWebSocket}/*'
+                            - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiTemplate.Outputs.DoubleGuesserWebSocket}/*'
             Events:
                 GameUpdate:
                     Type: DynamoDB
                     Properties:
                         StartingPosition: LATEST
-                        Stream: !GetAtt GamesTable.StreamArn
+                        Stream: !GetAtt TablesTemplate.Outputs.GameTableStream
         Metadata:
             BuildMethod: esbuild
             BuildProperties:
@@ -467,10 +327,10 @@ Outputs:
                 '',
                 [
                     'wss://',
-                    !Ref DoubleGuesserWebSocket,
+                    !GetAtt ApiTemplate.Outputs.DoubleGuesserWebSocket,
                     '.execute-api.',
                     !Ref 'AWS::Region',
                     '.amazonaws.com/',
-                    !Ref 'Stage',
+                    !GetAtt ApiTemplate.Outputs.Stage,
                 ],
             ]

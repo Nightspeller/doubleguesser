@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'Table definitions for the game Double Guesser by Sergei Sidorov
+
+  '
+Parameters:
+  ConnectionTableName:
+    Type: String
+    Default: doubleguesser_connections
+  GameTableName:
+    Type: String
+    Default: doubleguesser_game_states
+Resources:
+  ConnectionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      Tags:
+      - Key: project
+        Value: doubleguesser
+      AttributeDefinitions:
+      - AttributeName: userToken
+        AttributeType: S
+      - AttributeName: roomCode
+        AttributeType: S
+      KeySchema:
+      - AttributeName: userToken
+        KeyType: HASH
+      - AttributeName: roomCode
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName:
+        Ref: ConnectionTableName
+  GamesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      Tags:
+      - Key: project
+        Value: doubleguesser
+      AttributeDefinitions:
+      - AttributeName: roomCode
+        AttributeType: S
+      KeySchema:
+      - AttributeName: roomCode
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName:
+        Ref: GameTableName
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+Outputs:
+  GameTableStream:
+    Value:
+      Fn::GetAtt:
+      - GamesTable
+      - StreamArn

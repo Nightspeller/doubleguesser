@@ -2,13 +2,12 @@ version = 0.1
 [default]
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "doubleguesser-app"
+stack_name = "doubleguesser-sam-app"
 s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-w7rw538tjir6"
-s3_prefix = "doubleguesser-app"
+s3_prefix = "doubleguesser-sam-app"
 region = "us-east-2"
 confirm_changeset = true
-capabilities = "CAPABILITY_AUTO_EXPAND CAPABILITY_IAM"
-disable_rollback = false
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
 parameter_overrides = "ConnectionTableName=\"doubleguesser_connections\" GameTableName=\"doubleguesser_game_states\""
 image_repositories = []
 [default.build.parameters]

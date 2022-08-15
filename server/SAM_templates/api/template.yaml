@@ -4,15 +4,15 @@ Description: >
     API Gateway for the game doubleguesser
 
 Parameters:
-    CreateRoom:
+    CreateRoomArn:
         Type: String
-    JoinRoom:
+    JoinRoomArn:
         Type: String
-    LeaveRoom:
+    LeaveRoomArn:
         Type: String
-    RejoinRoom:
+    RejoinRoomArn:
         Type: String
-    UpdateGame:
+    UpdateGameArn:
         Type: String
 
 Resources:
@@ -41,7 +41,7 @@ Resources:
             ApiId: !Ref DoubleGuesserWebSocket
             IntegrationType: AWS_PROXY
             IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateRoom}/invocations
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateRoomArn}/invocations
     JoinRoomRoute:
         Type: AWS::ApiGatewayV2::Route
         Properties:
@@ -59,7 +59,7 @@ Resources:
             ApiId: !Ref DoubleGuesserWebSocket
             IntegrationType: AWS_PROXY
             IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JoinRoom}/invocations
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JoinRoomArn}/invocations
     LeaveRoomRoute:
         Type: AWS::ApiGatewayV2::Route
         Properties:
@@ -77,7 +77,7 @@ Resources:
             ApiId: !Ref DoubleGuesserWebSocket
             IntegrationType: AWS_PROXY
             IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoom}/invocations
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoomArn}/invocations
     RejoinRoomRoute:
         Type: AWS::ApiGatewayV2::Route
         Properties:
@@ -95,7 +95,7 @@ Resources:
             ApiId: !Ref DoubleGuesserWebSocket
             IntegrationType: AWS_PROXY
             IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RejoinRoom}/invocations
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RejoinRoomArn}/invocations
     UpdateGameRoute:
         Type: AWS::ApiGatewayV2::Route
         Properties:
@@ -113,7 +113,7 @@ Resources:
             ApiId: !Ref DoubleGuesserWebSocket
             IntegrationType: AWS_PROXY
             IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateGame}/invocations
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateGameArn}/invocations
     DisconnectRoute:
         Type: AWS::ApiGatewayV2::Route
         Properties:
@@ -131,7 +131,7 @@ Resources:
             ApiId: !Ref DoubleGuesserWebSocket
             IntegrationType: AWS_PROXY
             IntegrationUri:
-                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoom}/invocations
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoomArn}/invocations
     Deployment:
         Type: AWS::ApiGatewayV2::Deployment
         DependsOn:

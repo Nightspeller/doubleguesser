@@ -29,296 +29,69 @@ Resources:
             Parameters:
                 ConnectionTableName: !Ref ConnectionTableName
                 GameTableName: !Ref GameTableName
+    ApiLambdasTemplate:
+        Type: AWS::CloudFormation::Stack
+        DeletionPolicy: Retain
+        DependsOn:
+            - TablesTemplate
+        Properties:
+            TemplateURL: SAM_templates/api-lambdas/template.yaml
+            Tags:
+                - Key: project
+                  Value: doubleguesser
+            Parameters:
+                ConnectionTableName: !Ref ConnectionTableName
+                GameTableName: !Ref GameTableName
     ApiTemplate:
         Type: AWS::CloudFormation::Stack
         DeletionPolicy: Retain
         DependsOn:
-            - CreateRoomFunction
-            - JoinRoomFunction
-            - LeaveRoomFunction
-            - RejoinRoomFunction
-            - UpdateGameFunction
+            - ApiLambdasTemplate
         Properties:
             TemplateURL: SAM_templates/api/template.yaml
             Tags:
                 - Key: project
                   Value: doubleguesser
             Parameters:
-                CreateRoom: !GetAtt CreateRoomFunction.Arn
-                JoinRoom: !GetAtt JoinRoomFunction.Arn
-                LeaveRoom: !GetAtt LeaveRoomFunction.Arn
-                RejoinRoom: !GetAtt RejoinRoomFunction.Arn
-                UpdateGame: !GetAtt UpdateGameFunction.Arn
+                CreateRoomArn: !GetAtt ApiLambdasTemplate.Outputs.CreateRoomArn
+                JoinRoomArn: !GetAtt ApiLambdasTemplate.Outputs.JoinRoomArn
+                LeaveRoomArn: !GetAtt ApiLambdasTemplate.Outputs.LeaveRoomArn
+                RejoinRoomArn: !GetAtt ApiLambdasTemplate.Outputs.RejoinRoomArn
+                UpdateGameArn: !GetAtt ApiLambdasTemplate.Outputs.UpdateGameArn
 
-    CreateRoomFunction:
-        Type: AWS::Serverless::Function
+    PermissionTemplate:
+        Type: AWS::CloudFormation::Stack
+        DeletionPolicy: Retain
+        DependsOn:
+            - ApiLambdasTemplate
         Properties:
-            FunctionName: CreateRoomLambda
-            CodeUri: lambdas/create-room/
-            Handler: app.lambdaHandler
-            Runtime: nodejs16.x
-            Architectures:
-                - x86_64
-            Environment:
-                Variables:
-                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-                    GAMES_TABLE_NAME: !Ref GameTableName
-            Policies:
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref ConnectionTableName
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref GameTableName
-            Events:
-                HelloWorld:
-                    Type: Api
-                    Properties:
-                        Path: /create-room
-                        Method: post
-        Metadata:
-            BuildMethod: esbuild
-            BuildProperties:
-                Minify: true
-                Target: 'es2020'
-                Sourcemap: false
-                External:
-                    - aws-sdk
-                    - aws-lambda
-                EntryPoints:
-                    - app.ts
-    JoinRoomFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            FunctionName: JoinRoomLambda
-            CodeUri: lambdas/join-room/
-            Handler: app.lambdaHandler
-            Runtime: nodejs16.x
-            Architectures:
-                - x86_64
-            Environment:
-                Variables:
-                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-                    GAMES_TABLE_NAME: !Ref GameTableName
-            Policies:
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref ConnectionTableName
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref GameTableName
-            Events:
-                HelloWorld:
-                    Type: Api
-                    Properties:
-                        Path: /join-room
-                        Method: post
-        Metadata:
-            BuildMethod: esbuild
-            BuildProperties:
-                Minify: true
-                Target: 'es2020'
-                Sourcemap: false
-                External:
-                    - aws-sdk
-                    - aws-lambda
-                EntryPoints:
-                    - app.ts
-    LeaveRoomFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            FunctionName: LeaveRoomLambda
-            CodeUri: lambdas/leave-room/
-            Handler: app.lambdaHandler
-            Runtime: nodejs16.x
-            Architectures:
-                - x86_64
-            Environment:
-                Variables:
-                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-                    GAMES_TABLE_NAME: !Ref GameTableName
-            Policies:
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref ConnectionTableName
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref GameTableName
-            Events:
-                HelloWorld:
-                    Type: Api
-                    Properties:
-                        Path: /leave-room
-                        Method: post
-        Metadata:
-            BuildMethod: esbuild
-            BuildProperties:
-                Minify: true
-                Target: 'es2020'
-                Sourcemap: false
-                External:
-                    - aws-sdk
-                    - aws-lambda
-                EntryPoints:
-                    - app.ts
-    UpdateGameFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            FunctionName: UpdateGameLambda
-            CodeUri: lambdas/update-game/
-            Handler: app.lambdaHandler
-            Runtime: nodejs16.x
-            Architectures:
-                - x86_64
-            Environment:
-                Variables:
-                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-                    GAMES_TABLE_NAME: !Ref GameTableName
-            Policies:
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref ConnectionTableName
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref GameTableName
-            Events:
-                HelloWorld:
-                    Type: Api
-                    Properties:
-                        Path: /update-game
-                        Method: post
-        Metadata:
-            BuildMethod: esbuild
-            BuildProperties:
-                Minify: true
-                Target: 'es2020'
-                Sourcemap: false
-                External:
-                    - aws-sdk
-                    - aws-lambda
-                EntryPoints:
-                    - app.ts
-    RejoinRoomFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            FunctionName: RejoinRoomLambda
-            CodeUri: lambdas/rejoin-room/
-            Handler: app.lambdaHandler
-            Runtime: nodejs16.x
-            Architectures:
-                - x86_64
-            Environment:
-                Variables:
-                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-                    GAMES_TABLE_NAME: !Ref GameTableName
-            Policies:
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref ConnectionTableName
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref GameTableName
-            Events:
-                HelloWorld:
-                    Type: Api
-                    Properties:
-                        Path: /rejoin
-                        Method: post
-        Metadata:
-            BuildMethod: esbuild
-            BuildProperties:
-                Minify: true
-                Target: 'es2020'
-                Sourcemap: false
-                External:
-                    - aws-sdk
-                    - aws-lambda
-                EntryPoints:
-                    - app.ts
-
-    CreateRoomPermission:
-        Type: AWS::Lambda::Permission
+            TemplateURL: SAM_templates/permission/template.yaml
+            Tags:
+                - Key: project
+                  Value: doubleguesser
+            Parameters:
+                CreateRoomFunction: !GetAtt ApiLambdasTemplate.Outputs.CreateRoomFunction
+                JoinRoomFunction: !GetAtt ApiLambdasTemplate.Outputs.JoinRoomFunction
+                LeaveRoomFunction: !GetAtt ApiLambdasTemplate.Outputs.LeaveRoomFunction
+                RejoinRoomFunction: !GetAtt ApiLambdasTemplate.Outputs.RejoinRoomFunction
+                UpdateGameFunction: !GetAtt ApiLambdasTemplate.Outputs.UpdateGameFunction
+    LambdasTemplate:
+        Type: AWS::CloudFormation::Stack
+        DeletionPolicy: Retain
         DependsOn:
             - ApiTemplate
+            - TablesTemplate
         Properties:
-            Action: lambda:InvokeFunction
-            FunctionName: !Ref CreateRoomFunction
-            Principal: apigateway.amazonaws.com
-    JoinRoomPermission:
-        Type: AWS::Lambda::Permission
-        DependsOn:
-            - ApiTemplate
-        Properties:
-            Action: lambda:InvokeFunction
-            FunctionName: !Ref JoinRoomFunction
-            Principal: apigateway.amazonaws.com
-    LeaveRoomPermission:
-        Type: AWS::Lambda::Permission
-        DependsOn:
-            - ApiTemplate
-        Properties:
-            Action: lambda:InvokeFunction
-            FunctionName: !Ref LeaveRoomFunction
-            Principal: apigateway.amazonaws.com
-    RejoinRoomPermission:
-        Type: AWS::Lambda::Permission
-        DependsOn:
-            - ApiTemplate
-        Properties:
-            Action: lambda:InvokeFunction
-            FunctionName: !Ref RejoinRoomFunction
-            Principal: apigateway.amazonaws.com
-    UpdateGamePermission:
-        Type: AWS::Lambda::Permission
-        DependsOn:
-            - ApiTemplate
-        Properties:
-            Action: lambda:InvokeFunction
-            FunctionName: !Ref UpdateGameFunction
-            Principal: apigateway.amazonaws.com
-    HandleGameUpdateFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            FunctionName: HandleGameUpdateLambda
-            CodeUri: lambdas/handle-game-update/
-            Handler: app.lambdaHandler
-            Runtime: nodejs16.x
-            Architectures:
-                - x86_64
-            Environment:
-                Variables:
-                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
-                    GAMES_TABLE_NAME: !Ref GameTableName
-                    WEBSOCKET_ENDPOINT:
-                        !Join [
-                            '',
-                            [
-                                !GetAtt ApiTemplate.Outputs.DoubleGuesserWebSocket,
-                                '.execute-api.',
-                                !Ref 'AWS::Region',
-                                '.amazonaws.com/',
-                                !GetAtt ApiTemplate.Outputs.Stage,
-                            ],
-                        ]
-            Policies:
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref ConnectionTableName
-                - DynamoDBCrudPolicy:
-                      TableName: !Ref GameTableName
-                - Statement:
-                      - Effect: Allow
-                        Action:
-                            - 'execute-api:ManageConnections'
-                        Resource:
-                            - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiTemplate.Outputs.DoubleGuesserWebSocket}/*'
-            Events:
-                GameUpdate:
-                    Type: DynamoDB
-                    Properties:
-                        StartingPosition: LATEST
-                        Stream: !GetAtt TablesTemplate.Outputs.GameTableStream
-        Metadata:
-            BuildMethod: esbuild
-            BuildProperties:
-                Minify: true
-                Target: 'es2020'
-                Sourcemap: false
-                External:
-                    - aws-sdk
-                    - aws-lambda
-                EntryPoints:
-                    - app.ts
-
+            TemplateURL: SAM_templates/lambdas/template.yaml
+            Tags:
+                - Key: project
+                  Value: doubleguesser
+            Parameters:
+                ConnectionTableName: !Ref ConnectionTableName
+                GameTableName: !Ref GameTableName
+                GameTableStream: !GetAtt TablesTemplate.Outputs.GameTableStream
+                DoubleGuesserWebSocket: !GetAtt ApiTemplate.Outputs.DoubleGuesserWebSocket
+                Stage: !GetAtt ApiTemplate.Outputs.Stage
 Outputs:
     WebSocketURI:
         Description: 'The WSS Protocol URI to connect to'

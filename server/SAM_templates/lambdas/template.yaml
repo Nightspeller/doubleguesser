@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+    Business logic lambdas for doubleguesser.
+
+Parameters:
+    ConnectionTableName:
+        Type: String
+    GameTableName:
+        Type: String
+    GameTableStream:
+        Type: String
+    DoubleGuesserWebSocket:
+        Type: String
+    Stage:
+        Type: String
+
+Resources:
+    HandleGameUpdateFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            FunctionName: HandleGameUpdateLambda
+            CodeUri: ../../lambdas/handle-game-update/
+            Handler: app.lambdaHandler
+            Runtime: nodejs16.x
+            Architectures:
+                - x86_64
+            Environment:
+                Variables:
+                    CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
+                    GAMES_TABLE_NAME: !Ref GameTableName
+                    WEBSOCKET_ENDPOINT:
+                        !Join [
+                            '',
+                            [
+                                !Ref DoubleGuesserWebSocket,
+                                '.execute-api.',
+                                !Ref 'AWS::Region',
+                                '.amazonaws.com/',
+                                !Ref Stage,
+                            ],
+                        ]
+            Policies:
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref ConnectionTableName
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref GameTableName
+                - Statement:
+                      - Effect: Allow
+                        Action:
+                            - 'execute-api:ManageConnections'
+                        Resource:
+                            - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DoubleGuesserWebSocket}/*'
+            Events:
+                GameUpdate:
+                    Type: DynamoDB
+                    Properties:
+                        StartingPosition: LATEST
+                        Stream: !Ref GameTableStream
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                External:
+                    - aws-sdk
+                    - aws-lambda
+                EntryPoints:
+                    - app.ts

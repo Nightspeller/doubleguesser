@@ -58,23 +58,6 @@ Resources:
                 LeaveRoomArn: !GetAtt ApiLambdasTemplate.Outputs.LeaveRoomArn
                 RejoinRoomArn: !GetAtt ApiLambdasTemplate.Outputs.RejoinRoomArn
                 UpdateGameArn: !GetAtt ApiLambdasTemplate.Outputs.UpdateGameArn
-
-    PermissionTemplate:
-        Type: AWS::CloudFormation::Stack
-        DeletionPolicy: Retain
-        DependsOn:
-            - ApiLambdasTemplate
-        Properties:
-            TemplateURL: SAM_templates/permission/template.yaml
-            Tags:
-                - Key: project
-                  Value: doubleguesser
-            Parameters:
-                CreateRoomFunction: !GetAtt ApiLambdasTemplate.Outputs.CreateRoomFunction
-                JoinRoomFunction: !GetAtt ApiLambdasTemplate.Outputs.JoinRoomFunction
-                LeaveRoomFunction: !GetAtt ApiLambdasTemplate.Outputs.LeaveRoomFunction
-                RejoinRoomFunction: !GetAtt ApiLambdasTemplate.Outputs.RejoinRoomFunction
-                UpdateGameFunction: !GetAtt ApiLambdasTemplate.Outputs.UpdateGameFunction
     LambdasTemplate:
         Type: AWS::CloudFormation::Stack
         DeletionPolicy: Retain

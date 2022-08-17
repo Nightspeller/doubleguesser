@@ -185,17 +185,37 @@ Resources:
                     - aws-lambda
                 EntryPoints:
                     - app.ts
+    CreateRoomPermission:
+        Type: AWS::Lambda::Permission
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !Ref CreateRoomFunction
+            Principal: apigateway.amazonaws.com
+    JoinRoomPermission:
+        Type: AWS::Lambda::Permission
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !Ref JoinRoomFunction
+            Principal: apigateway.amazonaws.com
+    LeaveRoomPermission:
+        Type: AWS::Lambda::Permission
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !Ref LeaveRoomFunction
+            Principal: apigateway.amazonaws.com
+    RejoinRoomPermission:
+        Type: AWS::Lambda::Permission
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !Ref RejoinRoomFunction
+            Principal: apigateway.amazonaws.com
+    UpdateGamePermission:
+        Type: AWS::Lambda::Permission
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !Ref UpdateGameFunction
+            Principal: apigateway.amazonaws.com
 Outputs:
-    CreateRoomFunction:
-        Value: !Ref CreateRoomFunction
-    JoinRoomFunction:
-        Value: !Ref JoinRoomFunction
-    LeaveRoomFunction:
-        Value: !Ref LeaveRoomFunction
-    RejoinRoomFunction:
-        Value: !Ref RejoinRoomFunction
-    UpdateGameFunction:
-        Value: !Ref UpdateGameFunction
     CreateRoomArn:
         Value: !GetAtt CreateRoomFunction.Arn
     JoinRoomArn:

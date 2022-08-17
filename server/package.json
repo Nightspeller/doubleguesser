@@ -7,7 +7,7 @@
         "test": "tests"
     },
     "scripts": {
-        "test": "node ./dist/tests/index.js",
+        "test": "npx tsc ./tests/*.ts && node ./tests/*.js",
         "preinstall": "npm i -g esbuild"
     },
     "keywords": [],
@@ -16,6 +16,7 @@
     "devDependencies": {
         "@types/aws-lambda": "^8.10.92",
         "@types/jest": "^27.4.0",
+        "@types/lodash": "^4.14.182",
         "@types/node": "^17.0.13",
         "@types/ws": "^8.5.3",
         "@typescript-eslint/eslint-plugin": "^5.10.2",
@@ -28,6 +29,7 @@
         "eslint-config-prettier": "^8.3.0",
         "eslint-plugin-prettier": "^4.0.0",
         "jest": "^27.5.0",
+        "lodash": "^4.17.21",
         "prettier": "^2.5.1",
         "socket.io-client": "^4.5.1",
         "ts-node": "^10.4.0",

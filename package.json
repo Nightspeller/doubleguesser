@@ -4,7 +4,7 @@
   "description": "",
   "main": "",
   "scripts": {
-    "test": "node ./server/dist/tests/index.js"
+    "test": "echo 'no test'"
   },
   "repository": {
     "type": "git",

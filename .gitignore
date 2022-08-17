@@ -40,3 +40,4 @@ server/lambdas/handle-game-update/.DS_Store
 node_modules/
 server/node_modules
 server/dist
+server/tests/*.js

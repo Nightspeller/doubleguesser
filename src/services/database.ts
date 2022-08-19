@@ -2,6 +2,7 @@ import {initializeApp} from "firebase/app";
 import {getAnalytics} from "firebase/analytics";
 import {getDatabase, ref, child, set, get, update, push, onValue, DatabaseReference} from "firebase/database";
 import {prepareRound} from "./prepareRound";
+import calculateScores from "./calculateScores";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDkle9_usrpxligxBivJg5ToH8AeZo85DE",
@@ -37,72 +38,64 @@ export const db = {
         console.log("No data available");
       }
     })
-    await set(roomRef, {...defaultRoom, roomCode: roomCode, players: {
+    await set(roomRef, {
+      ...defaultRoom, roomCode: roomCode, players: {
         'A': {
           "connected": true,
-          "currentRole": "hinter",
           "id": "A",
           "nickname": "A",
           "score": 0
         },
         'B': {
           "connected": true,
-          "currentRole": "hinter",
           "id": "B",
           "nickname": "B",
           "score": 0
         },
         'C': {
           "connected": true,
-          "currentRole": "hinter",
           "id": "C",
           "nickname": "C",
           "score": 0
         },
         /*'D': {
           "connected": true,
-          "currentRole": "hinter",
           "id": "D",
           "nickname": "D",
           "score": 0
         },
         'E': {
           "connected": true,
-          "currentRole": "hinter",
           "id": "E",
           "nickname": "E",
           "score": 0
         },
         'F': {
           "connected": true,
-          "currentRole": "hinter",
           "id": "F",
           "nickname": "F",
           "score": 0
         },
         'G': {
           "connected": true,
-          "currentRole": "hinter",
           "id": "G",
           "nickname": "G",
           "score": 0
         },
         'H': {
           "connected": true,
-          "currentRole": "hinter",
           "id": "H",
           "nickname": "H",
           "score": 0
         },
         'I': {
           "connected": true,
-          "currentRole": "hinter",
           "id": "I",
           "nickname": "I",
           "score": 0
         }*/
 
-      },     "currentRound": {
+      }, "currentRound": {
         "firstWord": "phone",
         "firstWordHinters": [
           "A",
@@ -118,9 +111,10 @@ export const db = {
           "C"
         ],
         "guessers": [
-          "74VL0"
+          "67PUC"
         ]
-      }});
+      }
+    });
     return currentRoom;
   },
 
@@ -181,7 +175,7 @@ export const db = {
 
   submitHint(hint: string, playerId?: string) {
     const currentPlayerId = playerId ?? localStorage.getItem('playerId')!;
-    let currentPlayerRole ='';
+    let currentPlayerRole = '';
     if (currentRoom.currentRound.firstWordSaboteurs?.includes(currentPlayerId)) currentPlayerRole = 'firstWordSaboteur';
     if (currentRoom.currentRound.secondWordSaboteurs?.includes(currentPlayerId)) currentPlayerRole = 'secondWordSaboteur';
     if (currentRoom.currentRound.firstWordHinters.includes(currentPlayerId)) currentPlayerRole = 'firstWordHinter';
@@ -190,15 +184,44 @@ export const db = {
     const dbHint = {
       wordDescribed: currentPlayerRole.includes('first') ? 'first' : 'second',
       hint: hint,
-      isSabotage:  currentPlayerRole.includes('Saboteur'),
+      isSabotage: currentPlayerRole.includes('Saboteur'),
       excluded: false,
       author: currentPlayerId
     }
     return set(child(roomRef, `currentRound/hints/${currentPlayerId}`), dbHint);
   },
 
-  excludeHint(playerId: PlayerId) {
-    return set(child(roomRef, `currentRound/hints/${playerId}/excluded`), true);
+  setHintExclusion(playerId: PlayerId, shouldExclude: boolean) {
+    return set(child(roomRef, `currentRound/hints/${playerId}/excluded`), shouldExclude);
+  },
+
+  setReadyToPresentHints() {
+    return set(child(roomRef, `currentRound/readyToPresentHints`), true);
+  },
+
+  setGuess(guess: string, wordGuessed: 'first' | 'second') {
+    if (wordGuessed === 'first') {
+      return set(child(roomRef, `currentRound/firstWordGuess/guess`), guess);
+    } else {
+      return set(child(roomRef, `currentRound/secondWordGuess/guess`), guess);
+    }
+  },
+
+  setReadyToPresentGuesses() {
+    return set(child(roomRef, `currentRound/readyToPresentGuesses`), true);
+  },
+
+  setGuessEvaluation(wordGuessed: 'first' | 'second', isCorrect: boolean) {
+    if (wordGuessed === 'first') {
+      return set(child(roomRef, `currentRound/firstWordGuess/isCorrect`), isCorrect);
+    } else {
+      return set(child(roomRef, `currentRound/secondWordGuess/isCorrect`), isCorrect);
+    }
+  },
+
+  concludeRound() {
+    const playersWithUpdatedScores = calculateScores(currentRoom);
+    return set(child(roomRef, `players`), playersWithUpdatedScores);
   }
 }
 
@@ -207,7 +230,6 @@ export type PlayerId = string;
 export type Player = {
   id: PlayerId,
   nickname: string,
-  currentRole: 'guesser' | 'saboteur' | 'hinter',
   connected: boolean,
   score: number,
 }
@@ -220,15 +242,17 @@ export type Round = {
   secondWordSaboteurs?: PlayerId[],
   firstWordHinters: PlayerId[],
   secondWordHinters?: PlayerId[],
-  hints: {
+  hints: {[key: PlayerId]: {
     wordDescribed: 'first' | 'second',
     hint: string,
     isSabotage: boolean,
     excluded: boolean,
     author: PlayerId
-  }[],
-  firstWordGuess: string,
-  secondWordGuess: string,
+  }},
+  readyToPresentHints: boolean,
+  firstWordGuess: { guess: string, isCorrect: boolean },
+  secondWordGuess?: { guess: string, isCorrect: boolean },
+  readyToPresentGuesses: boolean,
   guessedCorrectly: boolean | undefined,
 }
 

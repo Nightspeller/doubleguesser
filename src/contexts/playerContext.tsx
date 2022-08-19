@@ -18,7 +18,6 @@ export const PlayerProvider = ({ children }) => {
   const playerInitialState = {
     id: playerId,
     nickname: playerNickname,
-    currentRole: 'hinter',
     connected: true,
     score: 0,
   }

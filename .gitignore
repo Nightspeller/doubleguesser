@@ -23,6 +23,7 @@
 /client/.env.development.local
 /client/.env.test.local
 /client/.env.production.local
+/client/src/config/environment.ts
 
 npm-debug.log*
 yarn-debug.log*
@@ -40,4 +41,4 @@ server/lambdas/handle-game-update/.DS_Store
 node_modules/
 server/node_modules
 server/dist
-server/tests/*.js
+server/tests/index.js

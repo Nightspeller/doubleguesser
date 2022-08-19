@@ -13,6 +13,7 @@ const ddbClient = new DynamoDB.DocumentClient(ddbParams);
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     let response: APIGatewayProxyResult;
     try {
+        console.log('Recieved create room request: ', event);
         const connectionId = event?.requestContext?.connectionId;
         if (!connectionId) {
             throw new Error('Could not store connection. No connection ID.');
@@ -24,8 +25,12 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         }
 
         const roomCode = getShortRoomCode();
+        console.log(`Storing connectionId: ${connectionId} for userToken: ${userToken} for room: ${roomCode}`);
         await storeUserConenction(connectionId, roomCode, userToken);
+        console.log(`Stored connectionId: ${connectionId} for userToken: ${userToken} for room: ${roomCode}`);
+        console.log(`Storing new game state for room: ${roomCode}`);
         await storeNewGame(roomCode, userToken);
+        console.log(`Stored new game state for room: ${roomCode}`);
         response = {
             statusCode: 200,
             body: JSON.stringify({
@@ -101,8 +106,9 @@ function createBlankGame(roomCode: string, userToken: string) {
         {
             roomCode,
         },
-        blankGame,
+        Object.assign({}, blankGame),
     );
+    result.players = {};
     (result.players as any)[userToken] = {
         connected: true,
         score: 0,

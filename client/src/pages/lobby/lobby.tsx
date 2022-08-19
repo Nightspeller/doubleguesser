@@ -5,10 +5,29 @@ import {PlayerContext} from "../../contexts/playerContext";
 import {RoomContext} from "../../contexts/roomContext";
 import {useNavigate, useParams} from "react-router-dom";
 import {currentRoom, db} from "../../services/database";
+import { rejoinRoom } from '../../actions/rejoinRoom';
 
 function Lobby() {
+
   // @ts-ignore
   const [room, setRoom] = React.useContext(RoomContext);
+    // @ts-ignore
+  const [player, setPlayer ] = React.useContext(PlayerContext);
+
+  const { roomCode }= useParams();
+
+  async function attemptRejoin() {
+	if (roomCode && Object.values(room).length === 0 && localStorage.getItem(roomCode)) {
+		player.userToken = localStorage.getItem(roomCode);
+		setPlayer(player);
+		const currentRoom = await rejoinRoom(roomCode);
+		setRoom(currentRoom);
+	}
+  }
+
+  useEffect(() => {
+		attemptRejoin();
+	}, []);
 
   const [rulesDialogOpened, setRulesDialogOpened] = useState(false);
   const navigate = useNavigate();
@@ -30,6 +49,8 @@ function Lobby() {
 
   console.log(room);
   return (
+	<div>
+	{ Object.values(room).length > 0 ? 
     <div className="lobby">
       <div>
         <h1>Players</h1>
@@ -112,6 +133,8 @@ function Lobby() {
         <button onClick={() => setRulesDialogOpened(false)}>Close</button>
       </dialog>
     </div>
+	: null }
+	</div>
   );
 }
 

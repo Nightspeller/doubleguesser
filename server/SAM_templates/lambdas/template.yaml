@@ -16,6 +16,38 @@ Parameters:
         Type: String
 
 Resources:
+    SendPlayerGameFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            FunctionName: SendPlayerGameFunction
+            CodeUri: ../../lambdas/send-player-game
+            Handler: app.lambdaHandler
+            Runtime: nodejs16.x
+            Architectures:
+                - x86_64
+            Environment:
+                Variables:
+                    GAMES_TABLE_NAME: !Ref GameTableName
+                    WEBSOCKET_ENDPOINT:
+                        !Join [
+                            '',
+                            [
+                                !Ref DoubleGuesserWebSocket,
+                                '.execute-api.',
+                                !Ref 'AWS::Region',
+                                '.amazonaws.com/',
+                                !Ref Stage,
+                            ],
+                        ]
+            Policies:
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref GameTableName
+                - Statement:
+                      - Effect: Allow
+                        Action:
+                            - 'execute-api:ManageConnections'
+                        Resource:
+                            - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${DoubleGuesserWebSocket}/*'
     HandleGameUpdateFunction:
         Type: AWS::Serverless::Function
         Properties:

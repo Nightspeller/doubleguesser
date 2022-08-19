@@ -163,6 +163,7 @@ Resources:
                 Variables:
                     CONNECTIONS_TABLE_NAME: !Ref ConnectionTableName
                     GAMES_TABLE_NAME: !Ref GameTableName
+                    SEND_PLAYER_GAME_FUNCTION: SendPlayerGameFunction
             Policies:
                 - DynamoDBCrudPolicy:
                       TableName: !Ref ConnectionTableName

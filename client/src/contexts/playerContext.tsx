@@ -1,7 +1,7 @@
 import React, {useState} from "react"
 
 export const PlayerContext = React.createContext({
-  player: {},
+  player: {} as Player,
   setPlayer: () => null
 })
 
@@ -12,15 +12,25 @@ if (playerId === '') {
   localStorage.setItem('playerId', playerId);
 }
 
+type Player = {
+	id: string;
+	nickname: string;
+	currentRole: string;
+	connected: boolean;
+	score: number;
+	userToken: string | undefined;
+}
+
 // @ts-ignore
 export const PlayerProvider = ({ children }) => {
 
-  const playerInitialState = {
+  const playerInitialState: Player = {
     id: playerId,
     nickname: playerNickname,
     currentRole: 'hinter',
     connected: true,
     score: 0,
+	userToken: undefined
   }
 
   const [player, setPlayer] = useState(playerInitialState);

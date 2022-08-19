@@ -11,6 +11,7 @@ const ddbClient = new DynamoDB.DocumentClient(ddbParams);
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     let response: APIGatewayProxyResult;
     try {
+        console.log('Recieved request to leave room: ', event);
         const connectionId = event?.requestContext?.connectionId;
         if (!connectionId) {
             throw new Error('Could not close connection. No connection ID.');
@@ -20,15 +21,21 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         if (!userToken || !roomCode) {
             //A graceful closure of the websocket will include these
             //Otherwise we must retrieve the tables primary key ourselves
+            console.log('Retrieving data for connectionId: ', connectionId);
             const entry = await getPrimaryKeyFromConnection(connectionId);
+            console.log(`Retrieved data for connectionId: ${connectionId}. Data: ${entry}`);
             if (!entry) {
                 throw new Error('Could not find user from connectionId.');
             }
             userToken = entry.userToken;
             roomCode = entry.roomCode;
         }
+        console.log(`Deleting connection for userToken: ${userToken} for roomCode: ${roomCode}`);
         await deleteUserConenction(userToken, roomCode);
+        console.log(`Deleted connection for userToken: ${userToken} for roomCode: ${roomCode}`);
+        console.log(`Updating room: ${roomCode}, with disconnected user: ${userToken}`);
         await updateGame(roomCode, userToken);
+        console.log(`Updated room: ${roomCode}, with disconnected user: ${userToken}`);
         response = {
             statusCode: 200,
             body: JSON.stringify({

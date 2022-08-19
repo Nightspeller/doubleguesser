@@ -11,6 +11,7 @@ const ddbClient = new DynamoDB.DocumentClient(ddbParams);
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     let response: APIGatewayProxyResult;
     try {
+        console.log('Recieved join room request: ', event);
         const connectionId = event?.requestContext?.connectionId;
         if (!connectionId) {
             throw new Error('Could not store connection. No connection ID.');
@@ -25,8 +26,15 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             throw new Error('Could not join. No room code provided.');
         }
 
+        console.log(
+            `Storing new user connectionId: ${connectionId} for userToken: ${userToken}, for room: ${roomCode}`,
+        );
         await storeUserConenction(connectionId, roomCode, userToken);
+        console.log(`Stored new user connectionId: ${connectionId} for userToken: ${userToken}, for room: ${roomCode}`);
+        console.log(`Updating game for room: ${roomCode} with new users token: ${userToken}`);
         await updateGame(roomCode, userToken);
+        console.log(`Updated game for room: ${roomCode} with new users token: ${userToken}`);
+
         response = {
             statusCode: 200,
             body: JSON.stringify({

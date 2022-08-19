@@ -1,0 +1,16 @@
+{
+    "name": "send-player-game",
+    "version": "1.0.0",
+    "description": "Force an update by sending game state to a player",
+    "main": "app.js",
+    "author": "SAM CLI",
+    "license": "MIT",
+    "scripts": {
+        "unit": "jest",
+        "lint": "eslint '*.ts' --quiet --fix",
+        "compile": "tsc",
+        "test": "npm run compile && npm run unit"
+    },
+    "devDependencies": {},
+    "dependencies": {}
+}

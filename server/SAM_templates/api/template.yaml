@@ -151,6 +151,9 @@ Resources:
             ApiId: !Ref DoubleGuesserWebSocket
             Tags:
                 project: doubleguesser
+            AccessLogSettings:
+                DestinationArn: arn:aws:logs:us-east-2:226194426447:log-group:DoubleguessserApiLogs:*
+                Format: '$context.extendedRequestId'
 
 Outputs:
     DoubleGuesserWebSocket:

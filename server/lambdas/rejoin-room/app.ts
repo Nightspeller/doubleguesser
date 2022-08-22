@@ -21,7 +21,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             throw new Error('Could not rejoin room. No connection ID.');
         }
 
-        const { userToken, roomCode } = JSON.parse(event.body || '');
+        const { userToken, roomCode } = JSON.parse(event.body || '{}');
 
         if (!userToken) {
             throw new Error('Could not rejoin room. No user token provided.');
@@ -39,13 +39,12 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             `Updated connection entry for user: ${userToken} in room: ${roomCode} with new connection: ${connectionId}`,
         );
         console.log(`Updating room: ${roomCode} with rejoined user: ${userToken}`);
-        const result = await updateGameState(roomCode, userToken);
-        if (Object.keys(result).length === 0) {
-            //If the database wasn't modified, the user won't get an updated game state, so we have to force it to send
-            console.log(`Sending game state for room: ${roomCode} to connection: ${connectionId}`);
-            forceUpdatePlayer(connectionId, roomCode);
-            console.log(`Sent game state for room: ${roomCode} to connection: ${connectionId}`);
-        }
+        await updateGameState(roomCode, userToken);
+        
+		console.log(`Sending game state for room: ${roomCode} to connection: ${connectionId}`);
+		forceUpdatePlayer(connectionId, roomCode);
+		console.log(`Sent game state for room: ${roomCode} to connection: ${connectionId}`);
+        
         response = {
             statusCode: 200,
             body: JSON.stringify({
@@ -113,6 +112,7 @@ async function updateGameState(roomCode: string, userToken: string) {
     try {
         const updateParams = getGameUpdateOperation(roomCode, userToken);
         const result = await ddbClient.update(updateParams).promise();
+		console.log(result);
         return result;
     } catch (err) {
         console.log(err);
@@ -124,6 +124,10 @@ function forceUpdatePlayer(connectionId: string, roomCode: string) {
     lambda.invoke({
         FunctionName: process.env.SEND_PLAYER_GAME_FUNCTION || '',
         Payload: JSON.stringify({ connectionId, roomCode }),
-        InvocationType: 'Event',
-    });
+    }, (err, data) => {
+		console.log(data);
+		if (err) {
+			console.error(err, err.stack);
+		}
+	})
 }

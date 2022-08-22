@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './App.css';
 import {PlayerProvider} from "./contexts/playerContext";
 import Welcome from "./pages/welcome/welcome";
@@ -6,14 +6,13 @@ import {RoomProvider} from "./contexts/roomContext";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import Lobby from "./pages/lobby/lobby";
 import Round from "./pages/round/round";
-import leaveRoom from './actions/leaveRoom';
-import { getWebSocket } from './services/websocket';
+import { closeWebSocket, setupWebSocket } from './services/websocket';
 
 window.onbeforeunload = () => {
-	leaveRoom();
+	closeWebSocket();
 }
 
-getWebSocket();
+setupWebSocket();
 function App() {
   return (
 	<PlayerProvider>

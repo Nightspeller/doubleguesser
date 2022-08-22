@@ -8,22 +8,11 @@ export enum WSStates {
 	CLOSED = 3
 } 
 
-
-export function getWebSocket(): Promise<WebSocket> {
-	if (ws?.readyState === WSStates.OPEN) {
-		return Promise.resolve(ws);
-	}
-	if (ws?.readyState === WSStates.CONNECTING) {
-		return new Promise((resolve, reject) => {
-			const handleOpen = () => {
-				ws.removeEventListener('open', handleOpen)
-				resolve(ws);
-			}
-			ws.addEventListener('open', handleOpen);
-		});
-		}
+async function openWebSocket(): Promise<WebSocket> {
 	return new Promise((resolve, reject) => {
-		ws = new WebSocket(REACT_APP_WEBSOCKET_URI);
+		if (!ws || ws.readyState !== WSStates.CONNECTING) {
+			ws = new WebSocket(REACT_APP_WEBSOCKET_URI);
+		}
 		const handleOpen = () => {
 			ws.removeEventListener('open', handleOpen)
 			resolve(ws);
@@ -36,8 +25,29 @@ export function getWebSocket(): Promise<WebSocket> {
 	});
 }
 
-export function getWebSocketForClose() {
+export function setupWebSocket(): Promise<WebSocket> {
 	if (ws?.readyState === WSStates.OPEN) {
-		return ws;
+		return Promise.resolve(ws);
 	}
+	return openWebSocket();
+}
+
+export function getWebSocket(): Promise<WebSocket> {
+	if (!ws) {
+		return setupWebSocket();
+	} 
+	if (ws.readyState === WSStates.CONNECTING) {
+		return new Promise((resolve, reject) => {
+			const handleOpen = () => {
+				ws.removeEventListener('open', handleOpen)
+				resolve(ws);
+			}
+			ws.addEventListener('open', handleOpen);
+		})
+	}
+	return Promise.resolve(ws);
+}
+
+export async function closeWebSocket() {
+	if (ws) ws.close();
 }

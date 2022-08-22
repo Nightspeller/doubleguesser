@@ -169,6 +169,8 @@ Resources:
                       TableName: !Ref ConnectionTableName
                 - DynamoDBCrudPolicy:
                       TableName: !Ref GameTableName
+                - LambdaInvokePolicy:
+                      FunctionName: SendPlayerGameFunction
             Events:
                 HelloWorld:
                     Type: Api

@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayProxyResult } from 'aws-lambda';
 import { ApiGatewayManagementApi, DynamoDB } from 'aws-sdk';
 
 const ddbParams = {
@@ -13,11 +13,11 @@ const apiParams = {
 };
 const api = new ApiGatewayManagementApi(apiParams);
 
-export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const lambdaHandler = async (event: any): Promise<APIGatewayProxyResult> => {
     let response: APIGatewayProxyResult;
     try {
         console.log('Recieved request to send game state to player: ', event);
-        const { connectionId, roomCode } = JSON.parse(event.body || '');
+        const { connectionId, roomCode } = event;
         if (!connectionId || !roomCode) {
             throw new Error('Could not send user game state. No connection or room code provided.');
         }

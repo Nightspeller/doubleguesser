@@ -16,7 +16,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             throw new Error('Could not close connection. No connection ID.');
         }
 
-        const { userToken, roomCode, gameState } = JSON.parse(event.body || '');
+        const { userToken, roomCode, gameState } = JSON.parse(event.body || '{}');
         const isAuthenticated = await authenticateUserUpdate(userToken, connectionId, roomCode, gameState);
         if (!isAuthenticated) {
             response = {

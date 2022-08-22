@@ -17,7 +17,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             throw new Error('Could not close connection. No connection ID.');
         }
 
-        let { userToken, roomCode } = JSON.parse(event.body || '');
+        let { userToken, roomCode } = JSON.parse(event.body || '{}');
         if (!userToken || !roomCode) {
             //A graceful closure of the websocket will include these
             //Otherwise we must retrieve the tables primary key ourselves

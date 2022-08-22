@@ -19,7 +19,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             throw new Error('Could not store connection. No connection ID.');
         }
 
-        const userToken = JSON.parse(event.body || '').userToken;
+        const userToken = JSON.parse(event.body || '{}').userToken;
         if (!userToken) {
             throw new Error('Could not store user. No user token.');
         }

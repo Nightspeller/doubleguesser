@@ -1,0 +1,17 @@
+{
+    "name": "handle-game-update",
+    "version": "1.0.0",
+    "description": "Notify all players of a game update",
+    "main": "app.js",
+    "author": "SAM CLI",
+    "license": "MIT",
+    "scripts": {
+        "unit": "jest",
+        "lint": "eslint '*.ts' --quiet --fix",
+        "compile": "tsc",
+        "test": "npm run compile && npm run unit",
+        "start": "cd ../ && sam invoke local \"CreateRoomFunction\" -e events/event.json"
+    },
+    "devDependencies": {},
+    "dependencies": {}
+}

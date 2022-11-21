@@ -1,0 +1,16 @@
+{
+    "name": "join-room",
+    "version": "1.0.0",
+    "description": "join a double guesser room",
+    "main": "app.js",
+    "author": "SAM CLI",
+    "license": "MIT",
+    "scripts": {
+        "unit": "jest",
+        "lint": "eslint '*.ts' --quiet --fix",
+        "compile": "tsc",
+        "test": "npm run compile && npm run unit"
+    },
+    "devDependencies": {},
+    "dependencies": {}
+}

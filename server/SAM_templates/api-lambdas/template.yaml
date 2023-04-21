@@ -37,7 +37,7 @@ Resources:
         Metadata:
             BuildMethod: esbuild
             BuildProperties:
-                Minify: true
+                Minify: false
                 Target: 'es2020'
                 Sourcemap: false
                 External:
@@ -72,7 +72,7 @@ Resources:
         Metadata:
             BuildMethod: esbuild
             BuildProperties:
-                Minify: true
+                Minify: false
                 Target: 'es2020'
                 Sourcemap: false
                 External:
@@ -107,7 +107,7 @@ Resources:
         Metadata:
             BuildMethod: esbuild
             BuildProperties:
-                Minify: true
+                Minify: false
                 Target: 'es2020'
                 Sourcemap: false
                 External:
@@ -142,7 +142,7 @@ Resources:
         Metadata:
             BuildMethod: esbuild
             BuildProperties:
-                Minify: true
+                Minify: false
                 Target: 'es2020'
                 Sourcemap: false
                 External:
@@ -180,7 +180,7 @@ Resources:
         Metadata:
             BuildMethod: esbuild
             BuildProperties:
-                Minify: true
+                Minify: false
                 Target: 'es2020'
                 Sourcemap: false
                 External:

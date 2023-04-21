@@ -17,7 +17,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             throw new Error('Could not store connection. No connection ID.');
         }
 
-        const { userToken, roomCode } = JSON.parse(event.body || '{}');
+        const { userToken, roomCode, userNickname } = JSON.parse(event.body || '{}');
         if (!userToken) {
             throw new Error('Could not store user. No user token.');
         }
@@ -32,7 +32,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         await storeUserConenction(connectionId, roomCode, userToken);
         console.log(`Stored new user connectionId: ${connectionId} for userToken: ${userToken}, for room: ${roomCode}`);
         console.log(`Updating game for room: ${roomCode} with new users token: ${userToken}`);
-        await updateGame(roomCode, userToken);
+        await updateGame(roomCode, userToken, userNickname);
         console.log(`Updated game for room: ${roomCode} with new users token: ${userToken}`);
 
         response = {
@@ -81,7 +81,11 @@ async function storeUserConenction(connectionId: string, roomCode: string, userT
     }
 }
 
-function getGameUpdateCommand(roomCode: string, userToken: string): DynamoDB.DocumentClient.UpdateItemInput {
+function getGameUpdateCommand(
+    roomCode: string,
+    userToken: string,
+    userNickname: string,
+): DynamoDB.DocumentClient.UpdateItemInput {
     return {
         TableName: process.env.GAMES_TABLE_NAME || '',
         Key: {
@@ -94,14 +98,15 @@ function getGameUpdateCommand(roomCode: string, userToken: string): DynamoDB.Doc
                 connected: true,
                 score: 0,
                 id: userToken,
+                nickname: userNickname,
             },
         },
     };
 }
 
-async function updateGame(roomCode: string, userToken: string) {
+async function updateGame(roomCode: string, userToken: string, userNickname: string) {
     try {
-        const updateParams = getGameUpdateCommand(roomCode, userToken);
+        const updateParams = getGameUpdateCommand(roomCode, userToken, userNickname);
         await ddbClient.update(updateParams).promise();
     } catch (err) {
         console.error(err);

@@ -40,11 +40,11 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         );
         console.log(`Updating room: ${roomCode} with rejoined user: ${userToken}`);
         await updateGameState(roomCode, userToken);
-        
-		console.log(`Sending game state for room: ${roomCode} to connection: ${connectionId}`);
-		forceUpdatePlayer(connectionId, roomCode);
-		console.log(`Sent game state for room: ${roomCode} to connection: ${connectionId}`);
-        
+
+        console.log(`Sending game state for room: ${roomCode} to connection: ${connectionId}`);
+        forceUpdatePlayer(connectionId, roomCode);
+        console.log(`Sent game state for room: ${roomCode} to connection: ${connectionId}`);
+
         response = {
             statusCode: 200,
             body: JSON.stringify({
@@ -112,7 +112,7 @@ async function updateGameState(roomCode: string, userToken: string) {
     try {
         const updateParams = getGameUpdateOperation(roomCode, userToken);
         const result = await ddbClient.update(updateParams).promise();
-		console.log(result);
+        console.log(result);
         return result;
     } catch (err) {
         console.log(err);
@@ -121,13 +121,16 @@ async function updateGameState(roomCode: string, userToken: string) {
 }
 
 function forceUpdatePlayer(connectionId: string, roomCode: string) {
-    lambda.invoke({
-        FunctionName: process.env.SEND_PLAYER_GAME_FUNCTION || '',
-        Payload: JSON.stringify({ connectionId, roomCode }),
-    }, (err, data) => {
-		console.log(data);
-		if (err) {
-			console.error(err, err.stack);
-		}
-	})
+    lambda.invoke(
+        {
+            FunctionName: process.env.SEND_PLAYER_GAME_FUNCTION || '',
+            Payload: JSON.stringify({ connectionId, roomCode }),
+        },
+        (err, data) => {
+            console.log(data);
+            if (err) {
+                console.error(err, err.stack);
+            }
+        },
+    );
 }

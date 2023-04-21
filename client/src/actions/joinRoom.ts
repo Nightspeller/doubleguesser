@@ -4,8 +4,9 @@ import { getWebSocket, WSStates } from "../services/websocket";
 function getJoinRoomRequest(player, roomCode) {
 	return JSON.stringify({
 		action: "joinRoom",
-		userToken: player.userToken,
-		roomCode
+		userToken: player.id,
+		roomCode,
+		userNickname: player.nickname,
 	});
 }
 

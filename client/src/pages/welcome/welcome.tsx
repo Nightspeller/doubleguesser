@@ -1,62 +1,48 @@
-import React, {useState} from 'react';
-import './welcome.css';
+import React, { useState } from "react";
+import "./welcome.css";
 import DgInput from "../../components/dg-input/dg-input";
-import {PlayerContext} from "../../contexts/playerContext";
-import {RoomContext} from "../../contexts/roomContext";
-import {useNavigate, useParams} from "react-router-dom";
-import {db, Player} from "../../services/database";
-import { createRoom } from '../../actions/createRoom';
-import { joinRoom } from '../../actions/joinRoom';
-import { rejoinRoom } from '../../actions/rejoinRoom';
+import { useNavigate, useParams } from "react-router-dom";
+import { createRoom } from "../../actions/createRoom";
+import { joinRoom } from "../../actions/joinRoom";
+import { rejoinRoom } from "../../actions/rejoinRoom";
+import { useRoomStore } from "../../services/roomStore";
 
 function Welcome() {
+  const room = useRoomStore((state) => state.room);
+  const player = useRoomStore((state) => state.player);
+  const setPlayerNickname = useRoomStore((state) => state.setPlayerNickname);
 
-  // @ts-ignore
-  const [player, setPlayer] = React.useContext(PlayerContext);
-  // @ts-ignore
-  const [room, setRoom] = React.useContext(RoomContext);
   const navigate = useNavigate();
-  const {roomCode} = useParams();
+  const { roomCode } = useParams();
+  const [joinRoomCodeValue, setJoinRoomCodeValue] = useState(roomCode || "");
 
-  const [joinRoomCodeValue, setJoinRoomCodeValue] = useState(roomCode || '');
-
+  console.log("Rendering Welcome page", room);
 
   async function submitCreateRoom() {
-    if (player.nickname !== '') {
-    //   const currentRoom = await db.createRoom(setRoom);
-    //   console.log(JSON.stringify(player, undefined, 2));
-    //   await db.addPlayerToRoom(player);
-    //   console.log(JSON.stringify(currentRoom, undefined, 2));
-
-    //   navigate('/lobby');
-		player.userToken = crypto.randomUUID();
-		setPlayer(player);
-		const currentRoom = await createRoom(player);
-		setRoom(currentRoom);
-		navigate(`/lobby/${currentRoom.roomCode}`);
+    if (player.nickname !== "") {
+      console.log("Creating new room");
+      const currentRoom = await createRoom(player);
+      console.log("Navigating to the lobby");
+      navigate(`/lobby/${currentRoom.roomCode}`);
+    } else {
+      alert("Please enter Nickname");
     }
   }
 
   async function submitJoinRoom() {
-    // console.log(`Joining the room ${joinRoomCodeValue}`);
-    // if (player.nickname !== '' && joinRoomCodeValue !== '') {
-    //   const currentRoom = await db.getExistingRoomToJoinByCode(joinRoomCodeValue, setRoom);
-    //   await db.addPlayerToRoom(player);
-    //   console.log(currentRoom);
-    //   navigate('/lobby');
-    // }
-		let currentRoom;
-		if (localStorage.getItem(joinRoomCodeValue)) {
-			player.userToken = localStorage.getItem(joinRoomCodeValue);
-			setPlayer(player);
-			currentRoom = await rejoinRoom(joinRoomCodeValue);
-		} else {
-			player.userToken = crypto.randomUUID();
-			setPlayer(player);
-			currentRoom = await joinRoom(player, joinRoomCodeValue);
-		}
-		setRoom(currentRoom);
-		navigate(`/lobby/${currentRoom.roomCode}`);
+    if (player.nickname !== "" &&  joinRoomCodeValue !== "") {
+      console.log('Joining the room with room code', joinRoomCodeValue);
+      let currentRoom;
+      if (localStorage.getItem(joinRoomCodeValue)) {
+        console.log('Player already joined this room in the past, rejoining instead')
+        currentRoom = await rejoinRoom(joinRoomCodeValue);
+      } else {
+        currentRoom = await joinRoom(player, joinRoomCodeValue);
+      }
+      navigate(`/lobby/${currentRoom.roomCode}`);
+    } else {
+      alert('Nickname or room code is missing');
+    }
   }
 
   return (
@@ -66,11 +52,11 @@ function Welcome() {
         label={"Nickname:"}
         placeholder={"Enter your nickname"}
         value={player.nickname}
-        onChange={(event) => setPlayer({...player, nickname: event.target.value})}
+        onChange={(event) => setPlayerNickname(event.target.value)}
       />
-      <hr/>
+      <hr />
       <button onClick={submitCreateRoom}>Create room</button>
-      <hr/>
+      <hr />
 
       <DgInput
         label={"Room code:"}

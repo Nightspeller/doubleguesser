@@ -13,23 +13,24 @@ const ddbClient = new DynamoDB.DocumentClient(ddbParams);
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     let response: APIGatewayProxyResult;
     try {
-        console.log('Recieved create room request: ', event);
+        console.log('Received create room request: ', event);
         const connectionId = event?.requestContext?.connectionId;
         if (!connectionId) {
             throw new Error('Could not store connection. No connection ID.');
         }
 
         const userToken = JSON.parse(event.body || '{}').userToken;
+        const userNickname = JSON.parse(event.body || '{}').userNickname;
         if (!userToken) {
             throw new Error('Could not store user. No user token.');
         }
 
-        const roomCode = getShortRoomCode();
+        const roomCode = generateShortRoomCode();
         console.log(`Storing connectionId: ${connectionId} for userToken: ${userToken} for room: ${roomCode}`);
-        await storeUserConenction(connectionId, roomCode, userToken);
+        await storeUserConnection(connectionId, roomCode, userToken);
         console.log(`Stored connectionId: ${connectionId} for userToken: ${userToken} for room: ${roomCode}`);
         console.log(`Storing new game state for room: ${roomCode}`);
-        await storeNewGame(roomCode, userToken);
+        await storeNewGame(roomCode, userToken, userNickname);
         console.log(`Stored new game state for room: ${roomCode}`);
         response = {
             statusCode: 200,
@@ -51,7 +52,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
     return response;
 };
 
-function getShortRoomCode(): string {
+function generateShortRoomCode(): string {
     return randomUUID().slice(0, 4);
 }
 
@@ -71,7 +72,7 @@ function getConnectionPutOperation(
     };
 }
 
-async function storeUserConenction(connectionId: string, roomCode: string, userToken: string): Promise<string> {
+async function storeUserConnection(connectionId: string, roomCode: string, userToken: string): Promise<string> {
     try {
         const putParams = getConnectionPutOperation(connectionId, roomCode, userToken);
         await ddbClient.put(putParams).promise();
@@ -82,9 +83,9 @@ async function storeUserConenction(connectionId: string, roomCode: string, userT
     }
 }
 
-async function storeNewGame(roomCode: string, userToken: string) {
+async function storeNewGame(roomCode: string, userToken: string, userNickname: string) {
     try {
-        const game = createBlankGame(roomCode, userToken);
+        const game = createBlankGame(roomCode, userToken, userNickname);
         const putParams = getGamePutOpertaion(game);
         await ddbClient.put(putParams).promise();
     } catch (err) {
@@ -100,7 +101,7 @@ function getGamePutOpertaion(game: any) {
     };
 }
 
-function createBlankGame(roomCode: string, userToken: string) {
+function createBlankGame(roomCode: string, userToken: string, userNickname: string) {
     //TODO more game initialization? Choose an initial word?
     const result = Object.assign(
         {
@@ -113,6 +114,7 @@ function createBlankGame(roomCode: string, userToken: string) {
         connected: true,
         score: 0,
         id: userToken,
+        nickname: userNickname,
     };
     return result;
 }

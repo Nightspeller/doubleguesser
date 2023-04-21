@@ -1,7 +1,5 @@
 import React, {ChangeEvent, useEffect, useState} from 'react';
 import './round.css';
-import {RoomContext} from "../../contexts/roomContext";
-import {PlayerContext} from "../../contexts/playerContext";
 import {db, PlayerId} from "../../services/database";
 
 function Round() {
